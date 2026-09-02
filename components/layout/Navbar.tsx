@@ -53,6 +53,7 @@ const navLinks = [
 export default function Navbar() {
   const { data: session } = useSession();
   const totalItems = useCartStore((s) => s.totalItems);
+  const openCart = useCartStore((s) => s.openCart);
   const [menuOpen, setMenuOpen] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -241,10 +242,10 @@ export default function Navbar() {
               )}
 
               {/* Cart */}
-              <Link
-                href="/cart"
+              <button
+                onClick={openCart}
                 className="relative p-2.5 text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label="Cart"
+                aria-label="Open cart"
               >
                 <ShoppingBag className="w-[18px] h-[18px]" />
                 {totalItems() > 0 && (
@@ -252,7 +253,7 @@ export default function Navbar() {
                     {totalItems()}
                   </span>
                 )}
-              </Link>
+              </button>
 
               {/* Mobile hamburger */}
               <button

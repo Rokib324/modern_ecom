@@ -6,6 +6,11 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      isCartOpen: false,
+
+      openCart: () => set({ isCartOpen: true }),
+      closeCart: () => set({ isCartOpen: false }),
+      toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
 
       addItem: (item: CartItem) => {
         set((state) => {
@@ -14,6 +19,7 @@ export const useCartStore = create<CartState>()(
           );
           if (existing) {
             return {
+              isCartOpen: true,
               items: state.items.map((i) =>
                 i.productId === item.productId
                   ? {
@@ -24,7 +30,7 @@ export const useCartStore = create<CartState>()(
               ),
             };
           }
-          return { items: [...state.items, item] };
+          return { isCartOpen: true, items: [...state.items, item] };
         });
       },
 
@@ -57,6 +63,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "ecom-cart",
+      partialize: (state) => ({ items: state.items }), // Only persist items, not isCartOpen
     }
   )
 );
