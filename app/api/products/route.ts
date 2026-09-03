@@ -22,7 +22,10 @@ export async function GET(request: NextRequest) {
     const filter: Record<string, any> = { isActive: true };
     if (category) filter.category = category;
     if (featured === "true") filter.isFeatured = true;
-    if (search) filter.$text = { $search: search };
+    if (search && search.trim()) {
+      const regex = { $regex: search.trim(), $options: "i" };
+      filter.$or = [{ name: regex }, { tags: regex }, { description: regex }];
+    }
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = parseFloat(minPrice);

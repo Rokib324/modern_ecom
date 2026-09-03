@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { useSearchStore } from "@/store/searchStore";
 import {
   Search,
   Heart,
@@ -59,6 +61,9 @@ export default function Navbar() {
   const { data: session } = useSession();
   const totalItems = useCartStore((s) => s.totalItems);
   const openCart = useCartStore((s) => s.openCart);
+  const openWishlist = useWishlistStore((s) => s.openWishlist);
+  const totalWishlistItems = useWishlistStore((s) => s.totalItems);
+  const openSearch = useSearchStore((s) => s.openSearch);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
@@ -242,30 +247,35 @@ export default function Navbar() {
               {/* ── Action Icons ── */}
               <div className="flex items-center gap-0.5 sm:gap-1">
                 {/* Search */}
-                <Link
-                  href="/search"
+                <button
+                  onClick={openSearch}
                   className={`p-2.5 rounded-full transition-colors duration-300 ${
                     isSolid
                       ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100/70"
                       : "text-white/95 hover:text-white hover:bg-white/10 drop-shadow-sm"
                   }`}
-                  aria-label="Search"
+                  aria-label="Open search"
                 >
                   <Search className="w-[19px] h-[19px]" />
-                </Link>
+                </button>
 
                 {/* Wishlist */}
-                <Link
-                  href="/wishlist"
-                  className={`p-2.5 rounded-full transition-colors duration-300 ${
+                <button
+                  onClick={openWishlist}
+                  className={`relative p-2.5 rounded-full transition-colors duration-300 ${
                     isSolid
                       ? "text-gray-600 hover:text-gray-900 hover:bg-gray-100/70"
                       : "text-white/95 hover:text-white hover:bg-white/10 drop-shadow-sm"
                   }`}
-                  aria-label="Wishlist"
+                  aria-label="Open wishlist"
                 >
                   <Heart className="w-[19px] h-[19px]" />
-                </Link>
+                  {totalWishlistItems() > 0 && (
+                    <span className="font-nav absolute top-1 right-0.5 bg-[#f2b8a0] text-[#3b2a25] text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center leading-none shadow-sm">
+                      {totalWishlistItems()}
+                    </span>
+                  )}
+                </button>
 
                 {/* Account */}
                 {session ? (
