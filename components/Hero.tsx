@@ -93,7 +93,7 @@ export default function Hero() {
   }, [next]);
 
   return (
-    <section className="relative w-full h-[calc(100vh-105px)] overflow-hidden bg-black">
+    <section className="relative w-full h-screen min-h-[640px] overflow-hidden bg-black">
       {/* ── Slides ── */}
       {slides.map((slide, i) => (
         <div
@@ -110,14 +110,14 @@ export default function Hero() {
             className="object-cover object-center"
             sizes="100vw"
           />
-          {/* Subtle dark vignette so text is legible */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+          {/* Subtle dark vignette so text and navbar are legible */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/15 to-black/40" />
         </div>
       ))}
 
       {/* ── Centre overlay: heading + CTA ── */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 text-center"
+        className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 text-center pt-16"
         style={{ zIndex: 2 }}
       >
         <p
