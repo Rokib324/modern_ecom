@@ -811,9 +811,6 @@ export default function ProductDetails() {
           </section>
 
           {/* ═════════════════════════════════════════════════
-              3-COLUMN EDITORIAL HERITAGE CARDS
-             ═════════════════════════════════════════════════ */}
-          {/* ═════════════════════════════════════════════════
               3-COLUMN EDITORIAL HERITAGE CARDS (TEXT OVER IMAGE)
              ═════════════════════════════════════════════════ */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 my-16">
