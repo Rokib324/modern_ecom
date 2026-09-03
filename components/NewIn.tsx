@@ -4,11 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { Heart, ArrowLeft, ArrowRight } from "lucide-react";
+import { useWishlistStore } from "@/store/wishlistStore";
 
 interface Product {
   id: string;
   name: string;
   price: string;
+  numPrice: number;
   image: string;
   category: "new-in" | "best-sellers" | "linen-blend";
   sizes: string[];
@@ -16,92 +18,251 @@ interface Product {
 }
 
 const productsData: Product[] = [
+  // ── NEW IN ──
   {
-    id: "1",
+    id: "new-1",
     name: "Ivory Cami Short Pyjama Set with Blue Lace Trim Satin",
     price: "£48.00",
+    numPrice: 48.0,
     image: "/images/newin_ivory_cami.jpg",
     category: "new-in",
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
   },
   {
-    id: "2",
+    id: "new-2",
     name: "Ivory Satin Dressing Gown with Blue Lace Trim",
     price: "£48.00",
+    numPrice: 48.0,
     image: "/images/newin_ivory_gown.jpg",
     category: "new-in",
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
   },
   {
-    id: "3",
+    id: "new-3",
     name: "Silver Grey with Pink Lace Trim Satin Cap Sleeve Nightdress",
     price: "£48.00",
+    numPrice: 48.0,
     image: "/images/newin_silver_nightdress.jpg",
     category: "new-in",
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
   },
   {
-    id: "4",
+    id: "new-4",
     name: "Autumn Floral with Pink Lace Trim Satin Cami Long Pyjama Set",
     price: "£46.00",
+    numPrice: 46.0,
     image: "/images/newin_autumn_floral_cami.jpg",
     category: "new-in",
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
   },
   {
-    id: "5",
+    id: "new-5",
     name: "Autumn Floral Satin Oversize Pyjama Set",
     price: "£48.00",
+    numPrice: 48.0,
     image: "/images/newin_autumn_floral_set.jpg",
     category: "new-in",
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
   },
   {
-    id: "6",
-    name: "Classic Linen Blend Long Sleeve Pyjama Set",
+    id: "new-6",
+    name: "Forest Green Gingham Nightwear Robe",
+    price: "£54.00",
+    numPrice: 54.0,
+    image: "/images/featured_gingham_product.jpg",
+    category: "new-in",
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+
+  // ── BEST SELLERS ──
+  {
+    id: "best-1",
+    name: "Classic Navy Striped Cotton Traditional Pyjama Set",
+    price: "£45.00",
+    numPrice: 45.0,
+    image: "/images/collection_striped_pyjamas.jpg",
+    category: "best-sellers",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: false,
+  },
+  {
+    id: "best-2",
+    name: "Luxury Satin Long Sleeve & Trouser Nightwear Set",
     price: "£52.00",
-    image: "/images/folded_cloths.jpg",
+    numPrice: 52.0,
+    image: "/images/collection_satin_pyjamas.jpg",
+    category: "best-sellers",
+    sizes: ["XS", "S", "M", "L"],
+    isNew: false,
+  },
+  {
+    id: "best-3",
+    name: "Vintage Botanical Floral Cotton Nightdress",
+    price: "£42.00",
+    numPrice: 42.0,
+    image: "/images/collection_nightdresses.jpg",
+    category: "best-sellers",
+    sizes: ["S", "M", "L", "XL"],
+    isNew: false,
+  },
+  {
+    id: "best-4",
+    name: "Silk Touch Emerald Green Dressing Gown",
+    price: "£58.00",
+    numPrice: 58.0,
+    image: "/images/featured_dressing_gowns.jpg",
+    category: "best-sellers",
+    sizes: ["XS", "S", "M", "L"],
+    isNew: false,
+  },
+  {
+    id: "best-5",
+    name: "Handcrafted Pure Cotton Breathable Pyjama Set",
+    price: "£46.00",
+    numPrice: 46.0,
+    image: "/images/collection_cotton_pyjamas.jpg",
+    category: "best-sellers",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: false,
+  },
+  {
+    id: "best-6",
+    name: "Heritage Checkered Flannel Loungewear Set",
+    price: "£50.00",
+    numPrice: 50.0,
+    image: "/images/featured_gingham_lifestyle.jpg",
     category: "best-sellers",
     sizes: ["S", "M", "L"],
     isNew: false,
   },
+
+  // ── LINEN BLEND ──
   {
-    id: "7",
-    name: "Heritage Botanical Print Cotton Set",
-    price: "£44.00",
+    id: "linen-1",
+    name: "Relaxed Organic Linen Blend Long Sleeve Pyjama Set",
+    price: "£56.00",
+    numPrice: 56.0,
+    image: "/images/folded_cloths.jpg",
+    category: "linen-blend",
+    sizes: ["S", "M", "L", "XL"],
+    isNew: true,
+  },
+  {
+    id: "linen-2",
+    name: "Heritage Botanical Print Linen-Cotton Pyjamas",
+    price: "£54.00",
+    numPrice: 54.0,
     image: "/images/homepagemodel.jpg",
     category: "linen-blend",
     sizes: ["XS", "S", "M", "L"],
     isNew: false,
   },
+  {
+    id: "linen-3",
+    name: "Breezy Oatmeal Linen Button-Down Nightdress",
+    price: "£48.00",
+    numPrice: 48.0,
+    image: "/images/collection_cotton_pyjamas.jpg",
+    category: "linen-blend",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: false,
+  },
+  {
+    id: "linen-4",
+    name: "Washed Terracotta Linen Cami & Shorts Lounge Set",
+    price: "£44.00",
+    numPrice: 44.0,
+    image: "/images/newin_autumn_floral_cami.jpg",
+    category: "linen-blend",
+    sizes: ["S", "M", "L"],
+    isNew: true,
+  },
+  {
+    id: "linen-5",
+    name: "Sage Green Linen Blend Lightweight Dressing Gown",
+    price: "£62.00",
+    numPrice: 62.0,
+    image: "/images/featured_dressing_gowns.jpg",
+    category: "linen-blend",
+    sizes: ["XS", "S", "M", "L"],
+    isNew: false,
+  },
+  {
+    id: "linen-6",
+    name: "Classic French Blue Striped Linen Sleepwear Set",
+    price: "£58.00",
+    numPrice: 58.0,
+    image: "/images/collection_striped_pyjamas.jpg",
+    category: "linen-blend",
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: false,
+  },
 ];
 
 const tabs = [
-  { id: "new-in", label: "New In" },
-  { id: "best-sellers", label: "Best Sellers" },
-  { id: "linen-blend", label: "Linen Blend Pyjamas & Nightwear" },
+  {
+    id: "new-in",
+    label: "New In",
+    endLabel: "New In",
+    href: "/products?category=new",
+  },
+  {
+    id: "best-sellers",
+    label: "Best Sellers",
+    endLabel: "Best Sellers",
+    href: "/products?category=best-sellers",
+  },
+  {
+    id: "linen-blend",
+    label: "Linen Blend Pyjamas & Nightwear",
+    endLabel: "Linen Blend",
+    href: "/products?category=linen-blend",
+  },
 ] as const;
 
 export default function NewIn() {
   const [activeTab, setActiveTab] = useState<string>("new-in");
-  const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const filteredProducts = productsData.filter(
-    (p) => activeTab === "new-in" || p.category === activeTab || p.category === "new-in"
-  );
+  // Global Wishlist Store
+  const wishlistItems = useWishlistStore((s) => s.items);
+  const addWishlistItem = useWishlistStore((s) => s.addItem);
+  const removeWishlistItem = useWishlistStore((s) => s.removeItem);
 
-  const toggleWishlist = (id: string, e: React.MouseEvent) => {
+  const currentTab = tabs.find((t) => t.id === activeTab) || tabs[0];
+  const filteredProducts = productsData.filter((p) => p.category === activeTab);
+
+  const toggleWishlist = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
+    const isWishlisted = wishlistItems.some((i) => i.productId === product.id);
+    if (isWishlisted) {
+      removeWishlistItem(product.id);
+    } else {
+      addWishlistItem({
+        productId: product.id,
+        name: product.name,
+        price: product.numPrice,
+        image: product.image,
+        slug: product.id,
+        category: product.category,
+      });
+    }
+  };
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
 
   const checkScrollability = () => {
@@ -167,8 +328,8 @@ export default function NewIn() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative pb-2.5 text-base sm:text-lg md:text-xl font-editorial tracking-tight whitespace-nowrap transition-colors duration-200 ${
+                    onClick={() => handleTabChange(tab.id)}
+                    className={`relative pb-2.5 text-base sm:text-lg md:text-xl font-editorial tracking-tight whitespace-nowrap transition-colors duration-200 cursor-pointer ${
                       isActive
                         ? "text-gray-900 font-medium"
                         : "text-gray-400 hover:text-gray-700"
@@ -218,7 +379,9 @@ export default function NewIn() {
             className="flex items-start gap-4 sm:gap-5 lg:gap-6 overflow-x-auto hide-scrollbar pt-6 pb-4 scroll-smooth snap-x snap-mandatory"
           >
             {filteredProducts.map((product) => {
-              const isWishlisted = wishlist[product.id];
+              const isWishlisted = wishlistItems.some(
+                (i) => i.productId === product.id
+              );
 
               return (
                 <div
@@ -251,9 +414,9 @@ export default function NewIn() {
 
                     {/* Wishlist Heart Button (Bottom Right) */}
                     <button
-                      onClick={(e) => toggleWishlist(product.id, e)}
+                      onClick={(e) => toggleWishlist(product, e)}
                       aria-label="Add to wishlist"
-                      className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-white/60 backdrop-blur-sm sm:bg-transparent hover:bg-white text-gray-800 hover:text-red-500 transition-all duration-200"
+                      className="absolute bottom-3 right-3 z-10 p-2 rounded-full bg-white/60 backdrop-blur-sm sm:bg-transparent hover:bg-white text-gray-800 hover:text-red-500 transition-all duration-200 cursor-pointer"
                     >
                       <Heart
                         className={`w-5 h-5 transition-transform duration-200 active:scale-125 stroke-[1.3] ${
@@ -293,13 +456,13 @@ export default function NewIn() {
               );
             })}
 
-            {/* ── View All End Card (matches Image 1) ── */}
+            {/* ── View All End Card (matches active tab) ── */}
             <div className="flex-shrink-0 w-[200px] sm:w-[240px] aspect-[3/4] flex flex-col items-center justify-center p-6 text-center snap-start self-start">
               <h3 className="font-editorial text-2xl sm:text-3xl text-gray-900 mb-3">
-                New In
+                {currentTab.endLabel}
               </h3>
               <Link
-                href="/products?category=new"
+                href={currentTab.href}
                 className="font-editorial text-sm sm:text-base text-gray-800 underline underline-offset-4 hover:opacity-70 transition-opacity"
               >
                 View all

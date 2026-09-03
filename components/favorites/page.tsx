@@ -232,7 +232,11 @@ export default function FavoritesPage({
                     key={item.productId}
                     className="group relative border border-gray-100 rounded-lg p-3 hover:shadow-md transition-shadow flex flex-col justify-between bg-white"
                   >
-                    <div className="relative aspect-square w-full rounded overflow-hidden mb-3 bg-gray-50">
+                    <Link
+                      href={`/products/${item.slug || item.productId}`}
+                      onClick={handleClose}
+                      className="relative aspect-square w-full rounded overflow-hidden mb-3 bg-gray-50 block cursor-pointer"
+                    >
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -240,20 +244,28 @@ export default function FavoritesPage({
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <button
-                        onClick={() => removeItem(item.productId)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeItem(item.productId);
+                        }}
                         title="Remove item"
-                        className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-white text-gray-600 hover:text-red-600 rounded-full shadow-sm transition-colors"
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 hover:bg-white text-gray-600 hover:text-red-600 rounded-full shadow-sm transition-colors cursor-pointer z-10"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    </div>
+                    </Link>
 
                     <div>
-                      <h4 className="text-xs font-medium text-gray-800 line-clamp-1 mb-1">
+                      <Link
+                        href={`/products/${item.slug || item.productId}`}
+                        onClick={handleClose}
+                        className="text-xs font-medium text-gray-800 line-clamp-1 mb-1 hover:text-[#f2b8a0] transition-colors block"
+                      >
                         {item.name}
-                      </h4>
+                      </Link>
                       <p className="text-xs font-semibold text-gray-900 mb-3">
-                        ${item.price.toFixed(2)}
+                        £{item.price.toFixed(2)}
                       </p>
                     </div>
 

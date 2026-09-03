@@ -60,7 +60,7 @@ export default function FeaturedProduct2() {
                       £48.00
                     </p>
                     <Link
-                      href="/products?category=new"
+                      href="/products/new-6"
                       className="font-sans-ui block text-center bg-[#f2b8a0] text-[#3b2a25] text-[10px] tracking-wider uppercase font-semibold py-1 rounded-[2px] hover:bg-[#ebb098] transition-colors"
                     >
                       Shop Now
@@ -79,7 +79,7 @@ export default function FeaturedProduct2() {
                   Shop New In
                 </h2>
                 <Link
-                  href="/products?category=new"
+                  href="/products/new-6"
                   className="font-sans-ui inline-block bg-[#f2b8a0] hover:bg-[#ebb098] text-[#3b2a25] text-xs sm:text-[13px] tracking-[0.16em] uppercase font-semibold px-6 py-2 rounded-[2px] shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Shop now
@@ -90,7 +90,7 @@ export default function FeaturedProduct2() {
               <div className="w-full max-w-[320px] sm:max-w-[340px] bg-white border border-gray-300/80 p-4 sm:p-5 flex flex-col items-center shadow-[0_1px_4px_rgba(0,0,0,0.03)] group">
                 {/* Product Image */}
                 <Link
-                  href="/products?category=new"
+                  href="/products/new-6"
                   className="relative aspect-[3/4] w-full overflow-hidden bg-[#faf8f5] mb-4 block"
                 >
                   <Image
@@ -104,7 +104,7 @@ export default function FeaturedProduct2() {
 
                 {/* Product Information */}
                 <Link
-                  href="/products?category=new"
+                  href="/products/new-6"
                   className="font-sans-ui text-[13px] sm:text-[14px] text-gray-800 hover:text-gray-900 leading-snug font-normal px-2 mb-1.5 transition-colors"
                 >
                   Womens Green Watercolour Gingham Seersucker Drop Shoulder Mini Nightdress
@@ -115,7 +115,7 @@ export default function FeaturedProduct2() {
 
                 {/* Choose Options Button */}
                 <Link
-                  href="/products?category=new"
+                  href="/products/new-6"
                   className="font-sans-ui inline-block border border-gray-300 hover:border-gray-900 text-gray-800 hover:text-gray-900 text-[11px] sm:text-xs tracking-wider uppercase px-4 py-1.5 rounded-[2px] transition-colors font-medium"
                 >
                   Choose options
