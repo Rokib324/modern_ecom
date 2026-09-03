@@ -54,6 +54,7 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   const { data: session } = useSession();
   const totalItems = useCartStore((s) => s.totalItems);
@@ -69,6 +70,7 @@ export default function Navbar() {
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (isAuthPage) return;
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
@@ -88,7 +90,9 @@ export default function Navbar() {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isAuthPage]);
+
+  if (isAuthPage) return null;
 
   // Solid white state condition
   const isSolid =
