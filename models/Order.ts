@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IOrderItem {
-  product: mongoose.Types.ObjectId;
+  product?: mongoose.Types.ObjectId | string;
   name: string;
   image: string;
   price: number;
@@ -49,13 +49,16 @@ export interface IOrder extends Document {
   updatedAt: Date;
 }
 
-const orderItemSchema = new Schema<IOrderItem>({
-  product: { type: Schema.Types.ObjectId, ref: "Product", required: false },
-  name: { type: String, required: true },
-  image: { type: String, required: true },
-  price: { type: Number, required: true },
-  quantity: { type: Number, required: true, min: 1 },
-});
+const orderItemSchema = new Schema<IOrderItem>(
+  {
+    product: { type: Schema.Types.Mixed, required: false },
+    name: { type: String, required: true },
+    image: { type: String, required: true },
+    price: { type: Number, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+  },
+  { _id: false }
+);
 
 const shippingAddressSchema = new Schema<IShippingAddress>({
   fullName: { type: String, required: true },
@@ -127,7 +130,12 @@ orderSchema.index({ orderId: 1 });
 orderSchema.index({ bkashPaymentId: 1 });
 orderSchema.index({ nagadOrderId: 1 });
 
+if (process.env.NODE_ENV !== "production") {
+  delete (mongoose.models as Record<string, unknown>).Order;
+}
+
 const Order: Model<IOrder> =
-  mongoose.models.Order || mongoose.model<IOrder>("Order", orderSchema);
+  (mongoose.models.Order as Model<IOrder>) ||
+  mongoose.model<IOrder>("Order", orderSchema);
 
 export default Order;

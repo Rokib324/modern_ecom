@@ -26,11 +26,27 @@ export async function POST(request: NextRequest) {
 
     const orderId = generateOrderId();
 
+    const sanitizedItems = (items || []).map((item: {
+      product?: string;
+      productId?: string;
+      id?: string;
+      name?: string;
+      image?: string;
+      price?: number;
+      quantity?: number;
+    }) => ({
+      product: String(item.product || item.productId || item.id || "item"),
+      name: item.name || "Product",
+      image: item.image || "/images/placeholder.jpg",
+      price: Number(item.price) || 0,
+      quantity: Number(item.quantity) || 1,
+    }));
+
     // Create a pending order
     const order = await Order.create({
       orderId,
       user: session.user.id,
-      items,
+      items: sanitizedItems,
       shippingAddress,
       paymentMethod: "nagad",
       paymentProvider: "nagad",
@@ -44,7 +60,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Build the callback URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const callbackUrl = `${appUrl}/api/payment/nagad/callback`;
 
     // Create Nagad order

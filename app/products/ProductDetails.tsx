@@ -48,8 +48,8 @@ const CATALOG: Record<string, ProductData> = {
   "new-1": {
     id: "new-1",
     name: "Ivory Cami Short Pyjama Set with Blue Lace Trim Satin",
-    price: 48.0,
-    priceFormatted: "£48.00",
+    price: 5800,
+    priceFormatted: "৳5,800",
     description:
       "Our best-loved cami and shorts set returns in a dreamy ivory hue, accented with contrasting ice-blue scalloped lace trims. Cut from liquid-drape recycled satin with delicate adjustable straps and a comfortable elasticated waistband.",
     images: [
@@ -65,8 +65,8 @@ const CATALOG: Record<string, ProductData> = {
     completeLook: {
       id: "new-2",
       name: "Ivory Satin Dressing Gown with Blue Lace Trim",
-      price: 48.0,
-      priceFormatted: "£48.00",
+      price: 6200,
+      priceFormatted: "৳6,200",
       image: "/images/newin_ivory_gown.jpg",
       category: "Womens",
     },
@@ -74,8 +74,8 @@ const CATALOG: Record<string, ProductData> = {
   "new-2": {
     id: "new-2",
     name: "Ivory Satin Dressing Gown with Blue Lace Trim",
-    price: 48.0,
-    priceFormatted: "£48.00",
+    price: 6200,
+    priceFormatted: "৳6,200",
     description:
       "Wrap yourself in pure elegance with our kimono-style satin dressing gown. Beautifully framed by delicate blue eyelash lace at the cuffs and hem.",
     images: [
@@ -90,8 +90,8 @@ const CATALOG: Record<string, ProductData> = {
     completeLook: {
       id: "new-1",
       name: "Ivory Cami Short Pyjama Set with Blue Lace Trim",
-      price: 48.0,
-      priceFormatted: "£48.00",
+      price: 5800,
+      priceFormatted: "৳5,800",
       image: "/images/newin_ivory_cami.jpg",
       category: "Womens",
     },
@@ -99,8 +99,8 @@ const CATALOG: Record<string, ProductData> = {
   "new-3": {
     id: "new-3",
     name: "Silver Grey with Pink Lace Trim Satin Cap Sleeve Nightdress",
-    price: 48.0,
-    priceFormatted: "£48.00",
+    price: 5500,
+    priceFormatted: "৳5,500",
     description:
       "Soft shimmering silver-grey satin nightdress featuring delicate pastel pink scalloped lace trim and comfortable cap sleeves.",
     images: [
@@ -115,8 +115,8 @@ const CATALOG: Record<string, ProductData> = {
     completeLook: {
       id: "new-2",
       name: "Ivory Satin Dressing Gown with Blue Lace Trim",
-      price: 48.0,
-      priceFormatted: "£48.00",
+      price: 6200,
+      priceFormatted: "৳6,200",
       image: "/images/newin_ivory_gown.jpg",
       category: "Womens",
     },
@@ -124,8 +124,8 @@ const CATALOG: Record<string, ProductData> = {
   "best-1": {
     id: "best-1",
     name: "Classic Navy Striped Cotton Traditional Pyjama Set",
-    price: 45.0,
-    priceFormatted: "£45.00",
+    price: 4500,
+    priceFormatted: "৳4,500",
     description:
       "Crisp, breathable 100% woven cotton pyjama set featuring our signature tailored notch collar, contrast piped cuffs, and mother-of-pearl buttons.",
     images: [
@@ -140,8 +140,8 @@ const CATALOG: Record<string, ProductData> = {
     completeLook: {
       id: "new-3",
       name: "Silver Grey with Pink Lace Trim Satin Nightdress",
-      price: 48.0,
-      priceFormatted: "£48.00",
+      price: 5500,
+      priceFormatted: "৳5,500",
       image: "/images/newin_silver_nightdress.jpg",
       category: "Womens",
     },
@@ -152,40 +152,40 @@ const RECOMMENDED_PRODUCTS = [
   {
     id: "new-1",
     name: "Ivory Cami Short Pyjama Set with Blue Lace Trim Satin",
-    price: "£48.00",
-    numPrice: 48.0,
+    price: "৳5,800",
+    numPrice: 5800,
     image: "/images/newin_ivory_cami.jpg",
     isNew: true,
   },
   {
     id: "new-2",
     name: "Classic Navy Striped Cotton Traditional Pyjama Set",
-    price: "£45.00",
-    numPrice: 45.0,
+    price: "৳4,500",
+    numPrice: 4500,
     image: "/images/collection_striped_pyjamas.jpg",
     isNew: false,
   },
   {
     id: "new-3",
     name: "Vintage Botanical Floral Cotton Nightdress",
-    price: "£42.00",
-    numPrice: 42.0,
+    price: "৳4,200",
+    numPrice: 4200,
     image: "/images/collection_nightdresses.jpg",
     isNew: false,
   },
   {
     id: "new-4",
     name: "Autumn Floral Satin Oversize Pyjama Set",
-    price: "£48.00",
-    numPrice: 48.0,
+    price: "৳5,900",
+    numPrice: 5900,
     image: "/images/newin_autumn_floral_set.jpg",
     isNew: true,
   },
   {
     id: "new-5",
     name: "Silk Touch Emerald Green Dressing Gown",
-    price: "£58.00",
-    numPrice: 58.0,
+    price: "৳5,800",
+    numPrice: 5800,
     image: "/images/featured_dressing_gowns.jpg",
     isNew: false,
   },
@@ -206,8 +206,8 @@ export default function ProductDetails() {
         productId.includes("nightdress") || productId.includes("gown")
           ? "Silver Grey with Pink Lace Trim Satin Cap Sleeve Nightdress"
           : "Ivory Cami Short Pyjama Set with Blue Lace Trim Satin",
-      price: 48.0,
-      priceFormatted: "£48.00",
+      price: 5800,
+      priceFormatted: "৳5,800",
       description:
         "Our best-loved cami and shorts set returns in a dreamy ivory hue, accented with contrasting ice-blue scalloped lace trims. Cut from liquid-drape recycled satin with delicate adjustable straps and a comfortable elasticated waistband.",
       images: [
@@ -223,8 +223,8 @@ export default function ProductDetails() {
       completeLook: {
         id: "new-2",
         name: "Ivory Satin Dressing Gown with Blue Lace Trim",
-        price: 48.0,
-        priceFormatted: "£48.00",
+        price: 6200,
+        priceFormatted: "৳6,200",
         image: "/images/newin_ivory_gown.jpg",
         category: "Womens",
       },
@@ -452,7 +452,7 @@ export default function ProductDetails() {
               <div className="bg-[#fcf8f5] border border-[#f2b8a0]/40 rounded-[2px] p-3 text-xs text-gray-700 flex items-center justify-between">
                 <span>
                   Pay in 3 interest-free payments of{" "}
-                  <strong>£{(product.price / 3).toFixed(2)}</strong> with
+                  <strong>৳{Math.round(product.price / 3).toLocaleString("en-BD")}</strong> with
                 </span>
                 <span className="font-semibold bg-[#ffb3c7] text-[#333] px-1.5 py-0.5 rounded text-[11px]">
                   Klarna
@@ -694,7 +694,7 @@ export default function ProductDetails() {
                     <div className="pb-4 text-xs sm:text-[13px] text-gray-600 leading-relaxed space-y-2">
                       <p className="flex items-center gap-2">
                         <Truck className="w-4 h-4 text-[#f2b8a0]" />
-                        <strong>Free UK Standard Delivery</strong> on all orders over £60.
+                        <strong>Free Bangladesh Standard Delivery</strong> on all orders over ৳5,000.
                       </p>
                       <p className="flex items-center gap-2">
                         <RotateCcw className="w-4 h-4 text-[#f2b8a0]" />

@@ -7,14 +7,27 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatPrice(
   price: number,
-  currency: string = "USD",
-  locale: string = "en-US"
+  currency: string = "BDT",
+  locale: string = "en-BD"
 ): string {
+  if (currency === "BDT") {
+    return `৳${Number(price || 0).toLocaleString("en-BD", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
   }).format(price);
+}
+
+export function formatBDT(amount: number): string {
+  return `৳${Number(amount || 0).toLocaleString("en-BD", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function formatDate(date: Date | string): string {

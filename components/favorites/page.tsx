@@ -265,7 +265,7 @@ export default function FavoritesPage({
                         {item.name}
                       </Link>
                       <p className="text-xs font-semibold text-gray-900 mb-3">
-                        £{item.price.toFixed(2)}
+                        ৳{item.price.toLocaleString("en-BD")}
                       </p>
                     </div>
 

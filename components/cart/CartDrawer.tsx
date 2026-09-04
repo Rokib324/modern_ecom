@@ -18,7 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const FREE_SHIPPING_THRESHOLD = 60.0;
+const FREE_SHIPPING_THRESHOLD = 5000.0;
 
 interface SearchProduct {
   _id: string;
@@ -255,7 +255,7 @@ function CartDrawer() {
   if (!isMounted) return null;
 
   const currentTotal = totalPriceVal;
-  const subtotal = currentTotal + (giftWrapping ? 7.95 : 0);
+  const subtotal = currentTotal + (giftWrapping ? 150 : 0);
   const discountedSubtotal = discountApplied ? subtotal * 0.9 : subtotal;
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(
@@ -391,7 +391,7 @@ function CartDrawer() {
                               {product.name}
                             </h4>
                             <p className="text-xs text-gray-500 mt-0.5">
-                              £{product.price.toFixed(2)}
+                              ৳{product.price.toLocaleString("en-BD")}
                             </p>
                           </div>
                           <button
@@ -514,7 +514,7 @@ function CartDrawer() {
                       <>
                         Only{" "}
                         <strong className="font-semibold text-gray-900">
-                          £{amountToFreeShipping.toFixed(2)}
+                          ৳{amountToFreeShipping.toLocaleString("en-BD")}
                         </strong>{" "}
                         away from free shipping!
                       </>
@@ -607,7 +607,7 @@ function CartDrawer() {
                           </div>
 
                           <p className="font-editorial text-sm sm:text-base text-gray-900 font-normal">
-                            £{(item.price * item.quantity).toFixed(2)}
+                            ৳{(item.price * item.quantity).toLocaleString("en-BD")}
                           </p>
                         </div>
 
@@ -653,7 +653,7 @@ function CartDrawer() {
                     Gift Wrapping
                   </span>
                   <span className="bg-[#e09121] text-white text-[10px] font-sans-ui font-bold px-2 py-0.5 rounded-[3px]">
-                    from £7.95
+                    from ৳150
                   </span>
                 </div>
                 <button
@@ -679,7 +679,7 @@ function CartDrawer() {
                   Subtotal
                 </span>
                 <span className="font-sans-ui text-sm sm:text-base text-gray-900 font-semibold">
-                  £{discountedSubtotal.toFixed(2)} GBP
+                  ৳{discountedSubtotal.toLocaleString("en-BD")} BDT
                 </span>
               </div>
 

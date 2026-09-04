@@ -8,7 +8,8 @@ import connectDB from "@/lib/db";
 import User from "@/models/User";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -69,20 +70,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Handle OAuth sign-ins (Google, Facebook): upsert user in DB
       if (account?.provider === "google" || account?.provider === "facebook") {
         await connectDB();
-        const existingUser = await User.findOne({ email: token.email }).lean<{
-          _id: mongoose.Types.ObjectId;
-          role: string;
-        }>();
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const userEmail = String(token.email ?? "").trim().toLowerCase();
+        const shouldBeAdmin = Boolean(adminEmail && userEmail === adminEmail);
+
+        const existingUser = await User.findOne({ email: token.email });
         if (!existingUser) {
           const newUser = await User.create({
             name: String(token.name ?? ""),
             email: String(token.email ?? ""),
             image: token.picture ?? undefined,
+            role: shouldBeAdmin ? "admin" : "user",
             isEmailVerified: true,
           });
           token.id = String(newUser._id);
           token.role = newUser.role;
         } else {
+          // If configured as admin email, elevate role
+          if (shouldBeAdmin && existingUser.role !== "admin") {
+            existingUser.role = "admin";
+            await existingUser.save();
+          }
           token.id = String(existingUser._id);
           token.role = existingUser.role;
         }

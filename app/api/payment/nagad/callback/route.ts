@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const orderId = searchParams.get("orderId");
   const status = searchParams.get("status");
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = request.nextUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   if (!paymentRefId || status === "Aborted" || status === "Cancel") {
     return NextResponse.redirect(

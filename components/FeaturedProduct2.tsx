@@ -57,7 +57,7 @@ export default function FeaturedProduct2() {
                       Womens Green Gingham Pyjama Set
                     </p>
                     <p className="font-sans-ui text-[11px] text-gray-600 mb-2">
-                      £48.00
+                      ৳5,800
                     </p>
                     <Link
                       href="/products/new-6"
@@ -110,7 +110,7 @@ export default function FeaturedProduct2() {
                   Womens Green Watercolour Gingham Seersucker Drop Shoulder Mini Nightdress
                 </Link>
                 <p className="font-sans-ui text-[13px] sm:text-[14px] text-gray-900 font-medium mb-4">
-                  £46.00
+                  ৳4,600
                 </p>
 
                 {/* Choose Options Button */}
