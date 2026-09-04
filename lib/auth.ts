@@ -1,12 +1,14 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Facebook from "next-auth/providers/facebook";
 import { z } from "zod";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -16,6 +18,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
+    Facebook({
+      clientId: process.env.FACEBOOK_CLIENT_ID ?? "",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET ?? "",
     }),
     Credentials({
       name: "Credentials",
@@ -60,8 +66,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
       }
-      // Handle Google sign-in: create/update user in DB
-      if (account?.provider === "google") {
+      // Handle OAuth sign-ins (Google, Facebook): upsert user in DB
+      if (account?.provider === "google" || account?.provider === "facebook") {
         await connectDB();
         const existingUser = await User.findOne({ email: token.email }).lean<{
           _id: mongoose.Types.ObjectId;

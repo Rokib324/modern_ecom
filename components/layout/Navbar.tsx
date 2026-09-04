@@ -72,7 +72,12 @@ export default function Navbar() {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isAuthPage) return;
@@ -270,7 +275,7 @@ export default function Navbar() {
                   aria-label="Open wishlist"
                 >
                   <Heart className="w-[19px] h-[19px]" />
-                  {totalWishlistItems() > 0 && (
+                  {mounted && totalWishlistItems() > 0 && (
                     <span className="font-nav absolute top-1 right-0.5 bg-[#f2b8a0] text-[#3b2a25] text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center leading-none shadow-sm">
                       {totalWishlistItems()}
                     </span>
@@ -347,7 +352,7 @@ export default function Navbar() {
                   aria-label="Open cart"
                 >
                   <ShoppingBag className="w-[19px] h-[19px]" />
-                  {totalItems() > 0 && (
+                  {mounted && totalItems() > 0 && (
                     <span className="font-nav absolute top-1 right-0.5 bg-[#f2b8a0] text-[#3b2a25] text-[10px] font-semibold rounded-full w-4 h-4 flex items-center justify-center leading-none shadow-sm">
                       {totalItems()}
                     </span>

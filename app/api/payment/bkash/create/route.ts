@@ -1,0 +1,75 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import connectDB from "@/lib/db";
+import Order from "@/models/Order";
+import { generateOrderId } from "@/lib/utils";
+import { createBkashPayment } from "@/lib/bkash";
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { items, shippingAddress, itemsPrice, shippingPrice, totalPrice } = body;
+
+    if (!items?.length || !shippingAddress || !totalPrice) {
+      return NextResponse.json(
+        { success: false, error: "Missing required order fields" },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    const orderId = generateOrderId();
+
+    // Create a pending order first
+    const order = await Order.create({
+      orderId,
+      user: session.user.id,
+      items,
+      shippingAddress,
+      paymentMethod: "bkash",
+      paymentProvider: "bkash",
+      itemsPrice,
+      shippingPrice,
+      totalPrice,
+      currency: "BDT",
+      isPaid: false,
+      isDelivered: false,
+      status: "pending",
+    });
+
+    // Build the callback URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const callbackUrl = `${appUrl}/api/payment/bkash/callback`;
+
+    // Create bKash payment session
+    const bkashResult = await createBkashPayment({
+      orderId,
+      amount: totalPrice,
+      callbackUrl,
+    });
+
+    // Save the bKash paymentID to the order for later verification
+    await Order.findByIdAndUpdate(order._id, {
+      bkashPaymentId: bkashResult.paymentID,
+    });
+
+    return NextResponse.json({
+      success: true,
+      bkashURL: bkashResult.bkashURL,
+      paymentID: bkashResult.paymentID,
+      orderId,
+    });
+  } catch (error) {
+    console.error("bKash create error:", error);
+    return NextResponse.json(
+      { success: false, error: "Payment initiation failed" },
+      { status: 500 }
+    );
+  }
+}
