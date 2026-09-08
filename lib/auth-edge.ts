@@ -22,6 +22,13 @@ export const { auth } = NextAuth({
         token.id = (user as { id?: string }).id ?? token.sub;
         token.role = (user as { role?: string }).role ?? "user";
       }
+
+      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const userEmail = String(token.email ?? "").trim().toLowerCase();
+      if (adminEmail && userEmail === adminEmail) {
+        token.role = "admin";
+      }
+
       return token;
     },
     async session({ session, token }) {

@@ -42,9 +42,65 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         await connectDB();
 
-        const user = await User.findOne({ email: parsed.data.email }).select(
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const envAdminPassword = process.env.ADMIN_PASSWORD?.trim();
+        const inputEmail = parsed.data.email.trim().toLowerCase();
+        const isTargetAdmin = Boolean(adminEmail && inputEmail === adminEmail);
+
+        let user = await User.findOne({ email: inputEmail }).select(
           "+password"
         );
+
+        if (isTargetAdmin) {
+          // If admin user doesn't exist yet, create it
+          if (!user) {
+            user = await User.create({
+              name: "Admin",
+              email: inputEmail,
+              password: parsed.data.password,
+              role: "admin",
+              isEmailVerified: true,
+            });
+            return {
+              id: user._id.toString(),
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: "admin",
+            };
+          }
+
+          // If admin user exists but has no password (e.g. created via Google OAuth)
+          if (!user.password) {
+            user.password = parsed.data.password;
+            user.role = "admin";
+            await user.save();
+            return {
+              id: user._id.toString(),
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: "admin",
+            };
+          }
+
+          // If ADMIN_PASSWORD is set in .env.local and matches the input, allow login & sync password
+          if (envAdminPassword && parsed.data.password === envAdminPassword) {
+            user.role = "admin";
+            const isMatch = await user.comparePassword(parsed.data.password);
+            if (!isMatch) {
+              user.password = parsed.data.password;
+              await user.save();
+            }
+            return {
+              id: user._id.toString(),
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: "admin",
+            };
+          }
+        }
 
         if (!user || !user.password) return null;
 
@@ -56,7 +112,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name,
           email: user.email,
           image: user.image,
-          role: user.role,
+          role: isTargetAdmin ? "admin" : user.role,
         };
       },
     }),
@@ -66,6 +122,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "user";
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const userEmail = String(token.email ?? "").trim().toLowerCase();
+      if (adminEmail && userEmail === adminEmail) {
+        token.role = "admin";
       }
       // Handle OAuth sign-ins (Google, Facebook): upsert user in DB
       if (account?.provider === "google" || account?.provider === "facebook") {

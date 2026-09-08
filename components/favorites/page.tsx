@@ -71,6 +71,11 @@ export default function FavoritesPage({
       stock: 10,
       slug: item.slug || item.productId,
     });
+    removeItem(item.productId);
+    closeWishlist();
+    if (onClose) {
+      onClose();
+    }
     openCart();
   };
 

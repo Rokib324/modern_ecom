@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 import { useSearchStore } from "@/store/searchStore";
 import {
   X,
@@ -144,6 +145,7 @@ function CartDrawer() {
   // Lock body scroll smoothly without forced reflow or layout jumps
   useEffect(() => {
     if (isOpen) {
+      useWishlistStore.getState().closeWishlist();
       document.body.style.overflow = "hidden";
       if (isSearchMode) {
         const timer = setTimeout(() => searchInputRef.current?.focus(), 100);

@@ -2,14 +2,17 @@
 
 import { useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 import { useRouter } from "next/navigation";
 
 export default function CartPage() {
   const router = useRouter();
   const openCart = useCartStore((s) => s.openCart);
   const addItem = useCartStore((s) => s.addItem);
+  const closeWishlist = useWishlistStore((s) => s.closeWishlist);
 
   useEffect(() => {
+    closeWishlist();
     // Seed sample product if cart is empty on first load so user immediately sees design
     if (useCartStore.getState().items.length === 0) {
       addItem({
@@ -25,7 +28,7 @@ export default function CartPage() {
     openCart();
     // Redirect cleanly to home page while drawer stays open
     router.replace("/");
-  }, [openCart, addItem, router]);
+  }, [openCart, addItem, router, closeWishlist]);
 
   return null;
 }

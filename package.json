@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "set-admin-password": "node scripts/set-admin-password.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.15.0",

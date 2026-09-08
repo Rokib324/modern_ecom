@@ -243,6 +243,12 @@ export default function LoginPage() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!password || password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading("credentials");
 
     const res = await signIn("credentials", {
@@ -255,7 +261,12 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Invalid password or account does not exist");
     } else {
-      router.push("/");
+      const searchParams =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search)
+          : null;
+      const callbackUrl = searchParams?.get("callbackUrl");
+      router.push(callbackUrl || "/");
       router.refresh();
     }
   };
