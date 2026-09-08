@@ -19,14 +19,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Ecom — Shop Smarter",
-    template: "%s | Ecom",
+    default: "Veronne — Shop Smarter",
+    template: "%s | Veronne",
   },
   description:
     "Your one-stop destination for quality products. Shop smarter, live better.",
   keywords: ["ecommerce", "shop", "products", "online store"],
   openGraph: {
-    title: "Ecom — Shop Smarter",
+    title: "Veronne — Shop Smarter",
     description: "Your one-stop destination for quality products.",
     type: "website",
   },

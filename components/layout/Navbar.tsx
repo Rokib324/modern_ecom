@@ -200,7 +200,7 @@ export default function Navbar() {
                     isSolid ? "text-gray-900" : "text-white drop-shadow-md"
                   }`}
                 >
-                  Ecom
+                  Veronne
                 </span>
               </Link>
 
