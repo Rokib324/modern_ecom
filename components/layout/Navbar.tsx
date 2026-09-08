@@ -120,6 +120,8 @@ export default function Navbar() {
   const nextAnnouncement = () =>
     setAnnouncementIndex((i) => (i + 1) % announcements.length);
 
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <>
       {/* Google Fonts */}

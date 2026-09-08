@@ -89,7 +89,7 @@ export default function Footer() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
-  if (isAuthPage) return null;
+  if (isAuthPage || pathname.startsWith("/admin")) return null;
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
