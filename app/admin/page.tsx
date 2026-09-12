@@ -58,30 +58,29 @@ function AdminDashboardContent() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+      className={`h-screen overflow-hidden flex font-sans transition-colors duration-200 ${
         isDark ? "bg-[#111827] text-gray-100" : "bg-[#f8fafc] text-gray-800"
       }`}
     >
-      {/* ── Outer Shell Container ── */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar (Desktop + Mobile Drawer) */}
-        <AdminSidebar
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-          mobileSidebarOpen={mobileSidebarOpen}
-          setMobileSidebarOpen={setMobileSidebarOpen}
-          isDark={isDark}
-          menuPosition={menuPosition}
-          activeMenu={activeMenu}
-          setActiveMenu={setActiveMenu}
-          openDropdowns={openDropdowns}
-          toggleDropdown={toggleDropdown}
-          onOpenSettings={() => setSettingsDrawerOpen(true)}
-        />
+      {/* Sidebar (Desktop + Mobile Drawer) */}
+      <AdminSidebar
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        mobileSidebarOpen={mobileSidebarOpen}
+        setMobileSidebarOpen={setMobileSidebarOpen}
+        isDark={isDark}
+        menuPosition={menuPosition}
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        openDropdowns={openDropdowns}
+        toggleDropdown={toggleDropdown}
+        onOpenSettings={() => setSettingsDrawerOpen(true)}
+      />
 
-        {/* Main Content Wrapper */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* Top Header Bar */}
+      {/* Main Content Wrapper — fills remaining width, never scrolls itself */}
+      <div className="flex flex-col flex-1 min-w-0 h-screen overflow-hidden">
+        {/* ── Sticky Top Header ── */}
+        <div className="flex-shrink-0">
           <AdminHeader
             isDark={isDark}
             setThemeMode={setThemeMode}
@@ -89,70 +88,73 @@ function AdminDashboardContent() {
             setMobileSidebarOpen={setMobileSidebarOpen}
             onOpenSettings={() => setSettingsDrawerOpen(true)}
           />
-
-          {/* Dashboard Content Body */}
-          <main className="flex-1 p-3.5 sm:p-6 lg:p-7 space-y-5 sm:space-y-6">
-            <div
-              className={`mx-auto space-y-6 ${
-                layoutWidth === "boxed" ? "max-w-[1340px]" : "w-full"
-              }`}
-            >
-              {activeMenu === "coupons" ? (
-                <CouponManagement isDark={isDark} />
-              ) : activeMenu === "site-content" ? (
-                <SiteContentManager isDark={isDark} />
-              ) : (
-                <>
-                  {/* 1. Top 4 Metrics Cards */}
-                  <MetricsCards isDark={isDark} />
-
-                  {/* 2. Middle Row: Recent Order / Top Products / Top Countries */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
-                    <div className="md:col-span-2 lg:col-span-5">
-                      <RecentOrdersChart isDark={isDark} />
-                    </div>
-                    <div className="md:col-span-1 lg:col-span-4">
-                      <TopProducts isDark={isDark} />
-                    </div>
-                    <div className="md:col-span-1 lg:col-span-3">
-                      <TopCountries isDark={isDark} />
-                    </div>
-                  </div>
-
-                  {/* 3. Second Row: Best Shop Sellers & Product Overview Tables */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
-                    <div className="lg:col-span-5">
-                      <BestSellersTable isDark={isDark} />
-                    </div>
-                    <div className="lg:col-span-7">
-                      <ProductOverviewTable isDark={isDark} />
-                    </div>
-                  </div>
-
-                  {/* 4. Third Row: Orders / Earnings / New Comments */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
-                    <div className="md:col-span-1 lg:col-span-4">
-                      <OrdersTable isDark={isDark} />
-                    </div>
-                    <div className="md:col-span-2 lg:col-span-5">
-                      <EarningsChart isDark={isDark} />
-                    </div>
-                    <div className="md:col-span-1 lg:col-span-3">
-                      <NewComments isDark={isDark} />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Footer */}
-              <footer className="pt-6 pb-2 text-center text-xs text-gray-400 dark:text-gray-500">
-                Copyright © 2026 Ecom. Design by{" "}
-                <span className="text-[#2563eb] hover:underline cursor-pointer">Rokib</span> All
-                rights reserved.
-              </footer>
-            </div>
-          </main>
         </div>
+
+        {/* ── Scrollable Content Area ── */}
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-7 space-y-5 sm:space-y-6">
+          <div
+            className={`mx-auto space-y-6 ${
+              layoutWidth === "boxed" ? "max-w-[1340px]" : "w-full"
+            }`}
+          >
+            {activeMenu === "coupons" ? (
+              <CouponManagement isDark={isDark} />
+            ) : activeMenu.startsWith("cms:") || activeMenu === "site-content" ? (
+              <SiteContentManager
+                isDark={isDark}
+                initialTab={activeMenu.startsWith("cms:") ? activeMenu.replace("cms:", "") : "announcements"}
+              />
+            ) : (
+              <>
+                {/* 1. Top 4 Metrics Cards */}
+                <MetricsCards isDark={isDark} />
+
+                {/* 2. Middle Row: Recent Order / Top Products / Top Countries */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
+                  <div className="md:col-span-2 lg:col-span-5">
+                    <RecentOrdersChart isDark={isDark} />
+                  </div>
+                  <div className="md:col-span-1 lg:col-span-4">
+                    <TopProducts isDark={isDark} />
+                  </div>
+                  <div className="md:col-span-1 lg:col-span-3">
+                    <TopCountries isDark={isDark} />
+                  </div>
+                </div>
+
+                {/* 3. Second Row: Best Sellers & Product Overview */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+                  <div className="lg:col-span-5">
+                    <BestSellersTable isDark={isDark} />
+                  </div>
+                  <div className="lg:col-span-7">
+                    <ProductOverviewTable isDark={isDark} />
+                  </div>
+                </div>
+
+                {/* 4. Third Row: Orders / Earnings / New Comments */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
+                  <div className="md:col-span-1 lg:col-span-4">
+                    <OrdersTable isDark={isDark} />
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-5">
+                    <EarningsChart isDark={isDark} />
+                  </div>
+                  <div className="md:col-span-1 lg:col-span-3">
+                    <NewComments isDark={isDark} />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Footer */}
+            <footer className="pt-6 pb-2 text-center text-xs text-gray-400 dark:text-gray-500">
+              Copyright © 2026 Ecom. Design by{" "}
+              <span className="text-[#2563eb] hover:underline cursor-pointer">Rokib</span> All
+              rights reserved.
+            </footer>
+          </div>
+        </main>
       </div>
 
       {/* Settings Drawer UI */}

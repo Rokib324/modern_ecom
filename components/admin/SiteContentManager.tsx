@@ -615,9 +615,17 @@ const CMS_TABS = [
 
 type CmsTabKey = typeof CMS_TABS[number]["key"];
 
-export default function SiteContentManager({ isDark }: { isDark?: boolean }) {
+export default function SiteContentManager({ isDark, initialTab }: { isDark?: boolean; initialTab?: string }) {
   const dark = isDark ?? false;
-  const [activeTab, setActiveTab] = useState<CmsTabKey>("announcements");
+  const [activeTab, setActiveTab] = useState<CmsTabKey>(
+    (CMS_TABS.find(t => t.key === initialTab)?.key ?? "announcements") as CmsTabKey
+  );
+
+  // Sync when parent changes the selected section via sidebar
+  useEffect(() => {
+    const match = CMS_TABS.find(t => t.key === initialTab);
+    if (match) setActiveTab(match.key);
+  }, [initialTab]);
 
   const tabContent: Record<CmsTabKey, React.ReactNode> = {
     announcements: <AnnouncementsTab isDark={dark} />,
@@ -629,54 +637,45 @@ export default function SiteContentManager({ isDark }: { isDark?: boolean }) {
     our_story: <OurStoryTab isDark={dark} />,
   };
 
-  return (
-    <div className={`min-h-screen ${dark ? "bg-gray-900" : "bg-gray-50"}`}>
-      {/* Page Header */}
-      <div className={`border-b px-6 pt-6 pb-0 ${dark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className={`text-xl font-bold ${dark ? "text-white" : "text-gray-900"}`}>Site Content Manager</h1>
-              <p className={`text-sm mt-0.5 ${dark ? "text-gray-400" : "text-gray-500"}`}>Edit every section of the storefront from here. Changes are live immediately after saving.</p>
-            </div>
-            <a href="/" target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${dark ? "border-gray-600 text-gray-300 hover:bg-gray-800" : "border-gray-300 text-gray-600 hover:bg-gray-50"}`}>
-              <Eye className="w-4 h-4" />
-              View Storefront
-            </a>
-          </div>
+  const currentTabMeta = CMS_TABS.find(t => t.key === activeTab) ?? CMS_TABS[0];
 
-          {/* Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-0">
-            {CMS_TABS.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                    isActive
-                      ? dark
-                        ? "border-indigo-400 text-indigo-400"
-                        : "border-gray-900 text-gray-900"
-                      : dark
-                        ? "border-transparent text-gray-400 hover:text-gray-200"
-                        : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-[#2563eb] flex items-center justify-center flex-shrink-0">
+            <currentTabMeta.icon className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className={`text-xl sm:text-2xl font-bold tracking-tight ${dark ? "text-white" : "text-gray-900"}`}>
+              {currentTabMeta.label}
+            </h1>
+            <p className={`text-xs sm:text-sm mt-0.5 ${dark ? "text-gray-400" : "text-gray-500"}`}>
+              Live storefront section content. Changes are live immediately after saving.
+            </p>
           </div>
         </div>
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors shadow-sm self-start sm:self-auto ${
+            dark
+              ? "border-gray-700 bg-gray-800 text-gray-200 hover:bg-gray-700"
+              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <Eye className="w-4 h-4 text-[#2563eb]" />
+          <span>View Storefront</span>
+        </a>
       </div>
 
-      {/* Tab Content */}
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      {/* Content */}
+      <div className="w-full">
         {tabContent[activeTab]}
       </div>
     </div>
   );
 }
+
