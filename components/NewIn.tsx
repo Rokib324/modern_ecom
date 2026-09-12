@@ -15,6 +15,7 @@ interface Product {
   category: "new-in" | "best-sellers" | "linen-blend";
   sizes: string[];
   isNew?: boolean;
+  active?: boolean;
 }
 
 const productsData: Product[] = [
@@ -205,26 +206,11 @@ const productsData: Product[] = [
   },
 ];
 
-const tabs = [
-  {
-    id: "new-in",
-    label: "New In",
-    endLabel: "New In",
-    href: "/products?category=new",
-  },
-  {
-    id: "best-sellers",
-    label: "Best Sellers",
-    endLabel: "Best Sellers",
-    href: "/products?category=best-sellers",
-  },
-  {
-    id: "linen-blend",
-    label: "Linen Blend Pyjamas & Nightwear",
-    endLabel: "Linen Blend",
-    href: "/products?category=linen-blend",
-  },
-] as const;
+const DEFAULT_TABS = [
+  { key: "new-in", label: "New In", href: "/products?category=new" },
+  { key: "best-sellers", label: "Best Sellers", href: "/products?category=best-sellers" },
+  { key: "linen-blend", label: "Linen Blend Pyjamas & Nightwear", href: "/products?category=linen-blend" },
+];
 
 export default function NewIn() {
   const [activeTab, setActiveTab] = useState<string>("new-in");
@@ -232,13 +218,38 @@ export default function NewIn() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // CMS-driven state
+  const [tabs, setTabs] = useState(DEFAULT_TABS);
+  const [allProducts, setAllProducts] = useState<Product[]>(productsData);
+
+  // Fetch CMS data
+  useEffect(() => {
+    fetch("/api/site-content?section=new_in")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          if (json.data.tabs?.length > 0) {
+            setTabs(json.data.tabs.map((t: { key: string; label: string }) => ({
+              key: t.key,
+              label: t.label,
+              href: `/products?category=${t.key}`,
+            })));
+          }
+          if (json.data.products?.length > 0) {
+            setAllProducts(json.data.products.filter((p: Product) => p.active !== false));
+          }
+        }
+      })
+      .catch(() => {/* keep defaults */});
+  }, []);
+
   // Global Wishlist Store
   const wishlistItems = useWishlistStore((s) => s.items);
   const addWishlistItem = useWishlistStore((s) => s.addItem);
   const removeWishlistItem = useWishlistStore((s) => s.removeItem);
 
-  const currentTab = tabs.find((t) => t.id === activeTab) || tabs[0];
-  const filteredProducts = productsData.filter((p) => p.category === activeTab);
+  const currentTab = tabs.find((t) => t.key === activeTab) || tabs[0];
+  const filteredProducts = allProducts.filter((p) => p.category === activeTab);
 
   const toggleWishlist = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
@@ -324,11 +335,11 @@ export default function NewIn() {
             {/* Tabs */}
             <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto hide-scrollbar">
               {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
+                const isActive = activeTab === tab.key;
                 return (
                   <button
-                    key={tab.id}
-                    onClick={() => handleTabChange(tab.id)}
+                    key={tab.key}
+                    onClick={() => handleTabChange(tab.key)}
                     className={`relative pb-2.5 text-base sm:text-lg md:text-xl font-editorial tracking-tight whitespace-nowrap transition-colors duration-200 cursor-pointer ${
                       isActive
                         ? "text-gray-900 font-medium"
@@ -459,10 +470,10 @@ export default function NewIn() {
             {/* ── View All End Card (matches active tab) ── */}
             <div className="flex-shrink-0 w-[200px] sm:w-[240px] aspect-[3/4] flex flex-col items-center justify-center p-6 text-center snap-start self-start">
               <h3 className="font-editorial text-2xl sm:text-3xl text-gray-900 mb-3">
-                {currentTab.endLabel}
+                {currentTab?.label ?? activeTab}
               </h3>
               <Link
-                href={currentTab.href}
+                href={currentTab?.href ?? `/products?category=${activeTab}`}
                 className="font-editorial text-sm sm:text-base text-gray-800 underline underline-offset-4 hover:opacity-70 transition-opacity"
               >
                 View all

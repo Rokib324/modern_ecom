@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 interface FeaturedBanner {
   id: string;
@@ -10,9 +11,10 @@ interface FeaturedBanner {
   href: string;
   image: string;
   alt: string;
+  active: boolean;
 }
 
-const banners: FeaturedBanner[] = [
+const DEFAULT_BANNERS: FeaturedBanner[] = [
   {
     id: "new-in",
     title: "New In",
@@ -20,6 +22,7 @@ const banners: FeaturedBanner[] = [
     href: "/products?category=new",
     image: "/images/featured_new_in.jpg",
     alt: "Model wearing new in sky blue floral cotton pyjamas",
+    active: true,
   },
   {
     id: "dressing-gowns",
@@ -28,10 +31,24 @@ const banners: FeaturedBanner[] = [
     href: "/products?category=dressing-gowns",
     image: "/images/featured_dressing_gowns.jpg",
     alt: "Model wearing light blue floral cotton dressing gown robe",
+    active: true,
   },
 ];
 
 export default function FeaturedProduct() {
+  const [banners, setBanners] = useState<FeaturedBanner[]>(DEFAULT_BANNERS);
+
+  useEffect(() => {
+    fetch("/api/site-content?section=featured_banners")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.items?.length > 0) {
+          setBanners(json.data.items.filter((b: FeaturedBanner) => b.active));
+        }
+      })
+      .catch(() => {/* keep defaults */});
+  }, []);
+
   return (
     <>
       <style>{`

@@ -22,6 +22,7 @@ import {
   Settings,
   LayoutDashboard,
   Ticket,
+  Globe,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -145,6 +146,18 @@ export default function AdminSidebar({
             >
               <Ticket className="w-4 h-4 flex-shrink-0 text-amber-500" />
               {!sidebarCollapsed && <span className="truncate">Coupons</span>}
+            </button>
+
+            <button
+              onClick={() => setActiveMenu("site-content")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                activeMenu === "site-content"
+                  ? "bg-[#2563eb] text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              <Globe className="w-4 h-4 flex-shrink-0 text-emerald-500" />
+              {!sidebarCollapsed && <span className="truncate">Site Content</span>}
             </button>
           </div>
 

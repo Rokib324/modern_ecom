@@ -5,22 +5,36 @@ import Link from "next/link";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const slides = [
+interface HeroSlide {
+  id: string;
+  src: string;
+  alt: string;
+  heading: string;
+  ctaLabel: string;
+  ctaHref: string;
+  active: boolean;
+}
+
+const DEFAULT_SLIDES: HeroSlide[] = [
   {
+    id: "slide-1",
     src: "/images/folded_cloths.jpg",
     alt: "Stacked folded garments with floral and gingham prints",
     heading: "New shapes, fresh prints, instant favourites.",
-    cta: { label: "SHOP NEW IN", href: "/products?category=new" },
+    ctaLabel: "SHOP NEW IN",
+    ctaHref: "/products?category=new",
+    active: true,
   },
   {
+    id: "slide-2",
     src: "/images/homepagemodel.jpg",
     alt: "Model wearing new season styles",
     heading: "Effortless style, beautifully made.",
-    cta: { label: "SHOP WOMENS", href: "/products?category=womens" },
+    ctaLabel: "SHOP WOMENS",
+    ctaHref: "/products?category=womens",
+    active: true,
   },
 ];
-
-const SLIDE_DURATION = 6000; // ms per slide
 
 /** SVG circular progress ring */
 function ProgressRing({ progress }: { progress: number }) {
@@ -31,25 +45,11 @@ function ProgressRing({ progress }: { progress: number }) {
   return (
     <svg width="30" height="30" viewBox="0 0 30 30" className="rotate-[-90deg]">
       {/* Track */}
-      <circle
-        cx="15"
-        cy="15"
-        r={radius}
-        fill="none"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="1.5"
-      />
+      <circle cx="15" cy="15" r={radius} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
       {/* Progress arc */}
       <circle
-        cx="15"
-        cy="15"
-        r={radius}
-        fill="none"
-        stroke="white"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
+        cx="15" cy="15" r={radius} fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round"
+        strokeDasharray={circumference} strokeDashoffset={offset}
         style={{ transition: "stroke-dashoffset 0.1s linear" }}
       />
       {/* Centre dot */}
@@ -59,10 +59,33 @@ function ProgressRing({ progress }: { progress: number }) {
 }
 
 export default function Hero() {
+  const [slides, setSlides] = useState<HeroSlide[]>(DEFAULT_SLIDES);
+  const [slideDuration, setSlideDuration] = useState(6000);
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
+
+  // Fetch CMS data
+  useEffect(() => {
+    fetch("/api/site-content?section=hero")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          const activeSlides = (json.data.slides ?? []).filter((s: HeroSlide) => s.active);
+          if (activeSlides.length > 0) setSlides(activeSlides);
+          if (json.data.slideDuration) setSlideDuration(json.data.slideDuration);
+        }
+      })
+      .catch(() => {/* keep defaults */});
+  }, []);
+
+  // Reset index when slides change
+  useEffect(() => {
+    setCurrent(0);
+    setProgress(0);
+    startTimeRef.current = Date.now();
+  }, [slides]);
 
   const goTo = useCallback((index: number) => {
     setCurrent(index);
@@ -73,14 +96,14 @@ export default function Hero() {
   const prev = () => goTo((current - 1 + slides.length) % slides.length);
   const next = useCallback(
     () => goTo((current + 1) % slides.length),
-    [current, goTo]
+    [current, goTo, slides.length]
   );
 
   // Tick progress
   useEffect(() => {
     const tick = () => {
       const elapsed = Date.now() - startTimeRef.current;
-      const p = Math.min(elapsed / SLIDE_DURATION, 1);
+      const p = Math.min(elapsed / slideDuration, 1);
       setProgress(p);
       if (p >= 1) {
         next();
@@ -90,14 +113,16 @@ export default function Hero() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [next]);
+  }, [next, slideDuration]);
+
+  if (slides.length === 0) return null;
 
   return (
     <section className="relative w-full h-screen min-h-[640px] overflow-hidden bg-black">
       {/* ── Slides ── */}
       {slides.map((slide, i) => (
         <div
-          key={slide.src}
+          key={slide.id}
           className="absolute inset-0 transition-opacity duration-700"
           style={{ opacity: i === current ? 1 : 0, zIndex: i === current ? 1 : 0 }}
           aria-hidden={i !== current}
@@ -127,11 +152,11 @@ export default function Hero() {
           {slides[current].heading}
         </p>
         <Link
-          href={slides[current].cta.href}
+          href={slides[current].ctaHref}
           className="bg-white text-[#3b2a25] text-[11px] tracking-[0.25em] font-semibold px-8 py-3 hover:bg-[#f2b8a0] transition-colors duration-200"
           style={{ fontFamily: "'Josefin Sans', sans-serif" }}
         >
-          {slides[current].cta.label}
+          {slides[current].ctaLabel}
         </Link>
       </div>
 
@@ -140,31 +165,15 @@ export default function Hero() {
         className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4"
         style={{ zIndex: 3 }}
       >
-        {/* Prev */}
-        <button
-          onClick={prev}
-          aria-label="Previous slide"
-          className="text-white/70 hover:text-white transition-colors"
-        >
+        <button onClick={prev} aria-label="Previous slide" className="text-white/70 hover:text-white transition-colors">
           <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
         </button>
 
-        {/* Circular progress ring */}
-        <button
-          onClick={next}
-          aria-label="Next slide"
-          className="hover:opacity-80 transition-opacity"
-          title="Next slide"
-        >
+        <button onClick={next} aria-label="Next slide" className="hover:opacity-80 transition-opacity" title="Next slide">
           <ProgressRing progress={progress} />
         </button>
 
-        {/* Next */}
-        <button
-          onClick={next}
-          aria-label="Next slide"
-          className="text-white/70 hover:text-white transition-colors"
-        >
+        <button onClick={next} aria-label="Next slide" className="text-white/70 hover:text-white transition-colors">
           <ChevronRight className="w-5 h-5" strokeWidth={1.5} />
         </button>
       </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 interface CategoryBanner {
   id: string;
@@ -11,9 +12,10 @@ interface CategoryBanner {
   href: string;
   image: string;
   alt: string;
+  active: boolean;
 }
 
-const banners: CategoryBanner[] = [
+const DEFAULT_BANNERS: CategoryBanner[] = [
   {
     id: "mens",
     title: "Mens Nightwear",
@@ -23,6 +25,7 @@ const banners: CategoryBanner[] = [
     href: "/products?category=mens",
     image: "/images/mens_nightwear.jpg",
     alt: "Smiling man wearing classic navy printed pyjama shirt",
+    active: true,
   },
   {
     id: "kids",
@@ -33,10 +36,24 @@ const banners: CategoryBanner[] = [
     href: "/products?category=kids",
     image: "/images/kids_pyjamas.jpg",
     alt: "Young girl wearing colourful summer pyjama set",
+    active: true,
   },
 ];
 
 export default function MensKidsDress() {
+  const [banners, setBanners] = useState<CategoryBanner[]>(DEFAULT_BANNERS);
+
+  useEffect(() => {
+    fetch("/api/site-content?section=mens_kids")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.banners?.length > 0) {
+          setBanners(json.data.banners.filter((b: CategoryBanner) => b.active));
+        }
+      })
+      .catch(() => {/* keep defaults */});
+  }, []);
+
   return (
     <>
       <style>{`

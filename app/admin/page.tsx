@@ -15,6 +15,7 @@ import EarningsChart from "@/components/admin/EarningsChart";
 import NewComments from "@/components/admin/NewComments";
 import SettingsDrawer from "@/components/admin/SettingsDrawer";
 import CouponManagement from "@/components/admin/CouponManagement";
+import SiteContentManager from "@/components/admin/SiteContentManager";
 
 function AdminDashboardContent() {
   const searchParams = useSearchParams();
@@ -98,6 +99,8 @@ function AdminDashboardContent() {
             >
               {activeMenu === "coupons" ? (
                 <CouponManagement isDark={isDark} />
+              ) : activeMenu === "site-content" ? (
+                <SiteContentManager isDark={isDark} />
               ) : (
                 <>
                   {/* 1. Top 4 Metrics Cards */}

@@ -3,42 +3,41 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface CollectionItem {
   id: string;
   title: string;
   image: string;
   href: string;
+  active: boolean;
 }
 
-const collections: CollectionItem[] = [
-  {
-    id: "cotton",
-    title: "Women's Cotton Pyjamas & Nightwear",
-    image: "/images/collection_cotton_pyjamas.jpg",
-    href: "/products?category=cotton-pyjamas",
-  },
-  {
-    id: "nightdresses",
-    title: "Women's Nightdresses and Shirts",
-    image: "/images/collection_nightdresses.jpg",
-    href: "/products?category=nightdresses",
-  },
-  {
-    id: "satin",
-    title: "Women's Satin Pyjamas & Nightwear",
-    image: "/images/collection_satin_pyjamas.jpg",
-    href: "/products?category=satin-pyjamas",
-  },
-  {
-    id: "striped",
-    title: "Striped Pyjamas & Nightwear",
-    image: "/images/collection_striped_pyjamas.jpg",
-    href: "/products?category=striped-pyjamas",
-  },
+const DEFAULT_COLLECTIONS: CollectionItem[] = [
+  { id: "cotton", title: "Women's Cotton Pyjamas & Nightwear", image: "/images/collection_cotton_pyjamas.jpg", href: "/products?category=cotton-pyjamas", active: true },
+  { id: "nightdresses", title: "Women's Nightdresses and Shirts", image: "/images/collection_nightdresses.jpg", href: "/products?category=nightdresses", active: true },
+  { id: "satin", title: "Women's Satin Pyjamas & Nightwear", image: "/images/collection_satin_pyjamas.jpg", href: "/products?category=satin-pyjamas", active: true },
+  { id: "striped", title: "Striped Pyjamas & Nightwear", image: "/images/collection_striped_pyjamas.jpg", href: "/products?category=striped-pyjamas", active: true },
 ];
 
 export default function ShopCollection() {
+  const [heading, setHeading] = useState("Shop Our Collections");
+  const [collections, setCollections] = useState<CollectionItem[]>(DEFAULT_COLLECTIONS);
+
+  useEffect(() => {
+    fetch("/api/site-content?section=collections")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          if (json.data.heading) setHeading(json.data.heading);
+          if (json.data.items?.length > 0) {
+            setCollections(json.data.items.filter((i: CollectionItem) => i.active));
+          }
+        }
+      })
+      .catch(() => {/* keep defaults */});
+  }, []);
+
   return (
     <>
       <style>{`
@@ -55,7 +54,7 @@ export default function ShopCollection() {
 
           {/* Section Heading */}
           <h2 className="font-editorial-heading text-xl sm:text-2xl md:text-[28px] uppercase tracking-[0.06em] text-gray-900 font-normal mb-6 sm:mb-8">
-            Shop Our Collections
+            {heading}
           </h2>
 
           {/* Collections 4-Column Grid */}

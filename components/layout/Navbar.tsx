@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const announcements = [
+const DEFAULT_ANNOUNCEMENTS = [
   "We Donate 20% of the Profits From our Kids Collection to our Chosen Charity!",
   "Free Shipping on Orders Over $75 — Shop Now",
   "New Arrivals Every Week — Explore the Latest Drops",
@@ -368,6 +368,7 @@ export default function Navbar() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const [announcements, setAnnouncements] = useState<string[]>(DEFAULT_ANNOUNCEMENTS);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -381,6 +382,19 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
+    // Fetch dynamic announcements from CMS
+    fetch("/api/site-content?section=announcements")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.items) {
+          const active = json.data.items
+            .filter((i: { active: boolean; text: string }) => i.active)
+            .map((i: { text: string }) => i.text)
+            .filter(Boolean);
+          if (active.length > 0) setAnnouncements(active);
+        }
+      })
+      .catch(() => {/* keep defaults */});
   }, []);
 
   // Measure and update header height for backdrop positioning
