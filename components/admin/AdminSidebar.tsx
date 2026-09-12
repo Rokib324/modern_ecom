@@ -20,6 +20,8 @@ import {
   X,
   ExternalLink,
   Settings,
+  LayoutDashboard,
+  Ticket,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -119,20 +121,30 @@ export default function AdminSidebar({
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 select-none scrollbar-thin">
-          {/* Top Single Item */}
-          <div>
+          {/* Primary Navigation: Dashboard & Coupons */}
+          <div className="space-y-1">
             <button
-              onClick={() => setActiveMenu("product-detail-3")}
+              onClick={() => setActiveMenu("dashboard")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                activeMenu === "product-detail-3"
+                activeMenu === "dashboard"
                   ? "bg-[#2563eb] text-white shadow-sm"
                   : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              <div className="w-4 h-4 flex items-center justify-center">
-                <span className="text-xs">◇</span>
-              </div>
-              {!sidebarCollapsed && <span className="truncate">Product Detail 3</span>}
+              <LayoutDashboard className="w-4 h-4 flex-shrink-0" />
+              {!sidebarCollapsed && <span className="truncate">Dashboard</span>}
+            </button>
+
+            <button
+              onClick={() => setActiveMenu("coupons")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                activeMenu === "coupons"
+                  ? "bg-[#2563eb] text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              <Ticket className="w-4 h-4 flex-shrink-0 text-amber-500" />
+              {!sidebarCollapsed && <span className="truncate">Coupons</span>}
             </button>
           </div>
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
+import Coupon from "@/models/Coupon";
 import { generateOrderId } from "@/lib/utils";
 import { requireAuth, errorResponse, formatZodError } from "@/lib/api-helpers";
 import { orderCreateSchema } from "@/lib/validations";
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       return errorResponse(formatZodError(parsed.error), 400);
     }
 
-    const { items: cartItems, shippingAddress, paymentMethod, notes } = parsed.data;
+    const { items: cartItems, shippingAddress, paymentMethod, notes, couponCode } = parsed.data;
 
     // 1. Fetch products from DB & recalculate exact prices + verify stock
     const validatedItems = [];
@@ -109,7 +110,34 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 2. Calculate Bangladesh shipping: ৳70 within Dhaka, ৳130 outside Dhaka. Free over ৳5000.
+    // 2. Validate coupon and calculate server-verified discount
+    let discount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let appliedCouponDoc: any = null;
+    if (couponCode && couponCode.trim()) {
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase().trim() });
+      const now = new Date();
+      if (
+        coupon &&
+        coupon.isActive &&
+        (!coupon.startDate || new Date(coupon.startDate) <= now) &&
+        (!coupon.expiryDate || new Date(coupon.expiryDate) >= now) &&
+        (coupon.usageLimit === null || coupon.usageLimit === undefined || coupon.usedCount < coupon.usageLimit) &&
+        itemsPrice >= (coupon.minOrderAmount || 0)
+      ) {
+        if (coupon.discountType === "percentage") {
+          discount = Math.round((itemsPrice * coupon.discountValue) / 100);
+          if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
+            discount = coupon.maxDiscountAmount;
+          }
+        } else {
+          discount = Math.min(coupon.discountValue, itemsPrice);
+        }
+        appliedCouponDoc = coupon;
+      }
+    }
+
+    // 3. Calculate Bangladesh shipping: ৳70 within Dhaka, ৳130 outside Dhaka. Free over ৳5000.
     let shippingPrice = 130;
     if (shippingAddress.division.trim().toLowerCase() === "dhaka") {
       shippingPrice = 70;
@@ -118,16 +146,16 @@ export async function POST(request: NextRequest) {
       shippingPrice = 0;
     }
 
-    const totalPrice = itemsPrice + shippingPrice;
+    const totalPrice = Math.max(0, itemsPrice - discount) + shippingPrice;
 
-    // 3. Atomically decrement stock
+    // 4. Atomically decrement stock
     for (const item of validatedItems) {
       await Product.findByIdAndUpdate(item.product, {
         $inc: { stock: -item.quantity },
       });
     }
 
-    // 4. Create Order
+    // 5. Create Order
     const orderId = generateOrderId();
     const order = await Order.create({
       orderId,
@@ -137,12 +165,38 @@ export async function POST(request: NextRequest) {
       paymentMethod,
       itemsPrice,
       shippingPrice,
+      discount,
+      couponCode: appliedCouponDoc ? appliedCouponDoc.code : undefined,
+      coupon: appliedCouponDoc ? appliedCouponDoc._id : undefined,
       totalPrice,
       currency: "BDT",
       status: "pending",
       isPaid: false,
       notes,
     });
+
+    // 6. Record coupon usage
+    if (appliedCouponDoc) {
+      try {
+        const userUsageIndex = (appliedCouponDoc.usedBy || []).findIndex(
+          (u: { user?: { toString: () => string } }) => u.user && u.user.toString() === user.id
+        );
+        if (userUsageIndex >= 0) {
+          appliedCouponDoc.usedBy[userUsageIndex].count += 1;
+          appliedCouponDoc.usedBy[userUsageIndex].usedAt = new Date();
+        } else {
+          appliedCouponDoc.usedBy.push({
+            user: user.id,
+            count: 1,
+            usedAt: new Date(),
+          });
+        }
+        appliedCouponDoc.usedCount = (appliedCouponDoc.usedCount || 0) + 1;
+        await appliedCouponDoc.save();
+      } catch (couponSaveErr) {
+        console.error("Failed to record coupon usage:", couponSaveErr);
+      }
+    }
 
     return NextResponse.json({ success: true, data: order }, { status: 201 });
   } catch (error) {

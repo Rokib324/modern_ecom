@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { items, shippingAddress, itemsPrice, shippingPrice, totalPrice } = body;
+    const { items, shippingAddress, itemsPrice, shippingPrice, totalPrice, discount = 0, couponCode } = body;
 
     if (!items?.length || !shippingAddress || !totalPrice) {
       return NextResponse.json(
@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
       paymentProvider: "bkash",
       itemsPrice,
       shippingPrice,
+      discount,
+      couponCode: couponCode || undefined,
       totalPrice,
       currency: "BDT",
       isPaid: false,

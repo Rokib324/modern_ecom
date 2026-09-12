@@ -70,7 +70,79 @@ export const orderCreateSchema = z.object({
   items: z.array(orderItemSchema).min(1, "Cart cannot be empty"),
   shippingAddress: shippingAddressSchema,
   paymentMethod: z.enum(["bkash", "nagad", "cod"]),
+  couponCode: z.string().optional(),
+  discount: z.number().min(0).optional(),
   notes: z.string().max(500).optional(),
+});
+
+export const couponSchema = z
+  .object({
+    code: z
+      .string()
+      .min(3, "Coupon code must be at least 3 characters")
+      .max(25, "Coupon code cannot exceed 25 characters")
+      .regex(/^[A-Za-z0-9_-]+$/, "Code can only contain letters, numbers, hyphens, and underscores")
+      .transform((val) => val.toUpperCase().trim()),
+    description: z.string().max(300, "Description cannot exceed 300 characters").optional().or(z.literal("")),
+    discountType: z.enum(["percentage", "fixed"]),
+    discountValue: z.number().min(0.01, "Discount value must be greater than 0"),
+    minOrderAmount: z.number().min(0, "Minimum order amount cannot be negative").default(0),
+    maxDiscountAmount: z.number().min(0, "Max discount cannot be negative").nullable().optional(),
+    startDate: z.string().or(z.date()).optional(),
+    expiryDate: z.string().or(z.date()).nullable().optional(),
+    usageLimit: z.number().int().min(1, "Usage limit must be at least 1").nullable().optional(),
+    userLimit: z.number().int().min(1, "User limit must be at least 1").default(1),
+    isActive: z.boolean().default(true),
+  })
+  .refine(
+    (data) => {
+      if (data.discountType === "percentage" && data.discountValue > 100) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Percentage discount cannot exceed 100%",
+      path: ["discountValue"],
+    }
+  );
+
+export const couponUpdateSchema = z
+  .object({
+    code: z
+      .string()
+      .min(3, "Coupon code must be at least 3 characters")
+      .max(25, "Coupon code cannot exceed 25 characters")
+      .regex(/^[A-Za-z0-9_-]+$/, "Code can only contain letters, numbers, hyphens, and underscores")
+      .transform((val) => val.toUpperCase().trim())
+      .optional(),
+    description: z.string().max(300).optional().or(z.literal("")),
+    discountType: z.enum(["percentage", "fixed"]).optional(),
+    discountValue: z.number().min(0.01).optional(),
+    minOrderAmount: z.number().min(0).optional(),
+    maxDiscountAmount: z.number().min(0).nullable().optional(),
+    startDate: z.string().or(z.date()).optional(),
+    expiryDate: z.string().or(z.date()).nullable().optional(),
+    usageLimit: z.number().int().min(1).nullable().optional(),
+    userLimit: z.number().int().min(1).optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.discountType === "percentage" && data.discountValue && data.discountValue > 100) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Percentage discount cannot exceed 100%",
+      path: ["discountValue"],
+    }
+  );
+
+export const couponValidateSchema = z.object({
+  code: z.string().min(1, "Coupon code is required").transform((v) => v.toUpperCase().trim()),
+  subtotal: z.number().min(0, "Subtotal must be non-negative"),
 });
 
 export const orderStatusSchema = z.object({

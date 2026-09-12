@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
-import { ChevronRight, ChevronDown, Tag, ShieldCheck, Truck } from "lucide-react";
+import { ChevronRight, ChevronDown, Tag, ShieldCheck, Truck, CheckCircle2, X, Loader2, AlertCircle } from "lucide-react";
 
 /* ─── Bangladesh divisions & districts ─────────────────────────────────────── */
 const BD_DIVISIONS: Record<string, string[]> = {
@@ -79,18 +79,27 @@ function OrderSummary({
   shippingCost,
   discount,
   coupon,
+  appliedCoupon,
+  couponError,
+  couponLoading,
   onCouponChange,
   onApplyCoupon,
+  onRemoveCoupon,
 }: {
   shippingCost: number;
   discount: number;
   coupon: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  appliedCoupon: any;
+  couponError: string | null;
+  couponLoading: boolean;
   onCouponChange: (v: string) => void;
   onApplyCoupon: () => void;
+  onRemoveCoupon: () => void;
 }) {
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.totalPrice());
-  const discountedSubtotal = subtotal - discount;
+  const discountedSubtotal = Math.max(0, subtotal - discount);
   const total = discountedSubtotal + shippingCost;
   const [showItems, setShowItems] = useState(true);
 
@@ -150,25 +159,64 @@ function OrderSummary({
         )}
 
         <div className="px-5 py-4 space-y-3 bg-white">
-          {/* Coupon */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-              <input
-                type="text"
-                value={coupon}
-                onChange={(e) => onCouponChange(e.target.value)}
-                placeholder="Discount code"
-                className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors"
-              />
+          {/* Coupon Section */}
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+              <div className="flex items-center gap-2 min-w-0">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <div className="min-w-0 truncate">
+                  <span className="font-bold tracking-wide uppercase">{appliedCoupon.code}</span>
+                  <span className="text-emerald-700 ml-1.5 font-medium">
+                    ({appliedCoupon.discountType === "percentage" ? `${appliedCoupon.discountValue}% off` : `৳${appliedCoupon.discountValue} off`})
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onRemoveCoupon}
+                className="text-emerald-700 hover:text-emerald-900 font-semibold p-1 hover:bg-emerald-100 rounded-md transition-colors"
+                title="Remove coupon"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <button
-              onClick={onApplyCoupon}
-              className="px-4 py-2.5 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors whitespace-nowrap"
-            >
-              Apply
-            </button>
-          </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={coupon}
+                    onChange={(e) => onCouponChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        onApplyCoupon();
+                      }
+                    }}
+                    placeholder="Discount code (e.g. SAVE20)"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm uppercase tracking-wider border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 transition-colors"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={onApplyCoupon}
+                  disabled={couponLoading || !coupon.trim()}
+                  className="px-4 py-2.5 text-sm font-medium bg-gray-900 hover:bg-black text-white rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                >
+                  {couponLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Apply
+                </button>
+              </div>
+              {couponError && (
+                <p className="text-xs text-red-500 mt-2 flex items-start gap-1 leading-snug">
+                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                  <span>{couponError}</span>
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Price breakdown */}
           <div className="space-y-2 pt-1">
@@ -177,8 +225,11 @@ function OrderSummary({
               <span>৳{subtotal.toLocaleString("bn-BD")}</span>
             </div>
             {discount > 0 && (
-              <div className="flex justify-between text-sm text-green-600">
-                <span>Discount (10%)</span>
+              <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                <span className="flex items-center gap-1">
+                  <Tag className="w-3.5 h-3.5" />
+                  Discount ({appliedCoupon?.code || "Coupon"})
+                </span>
                 <span>-৳{discount.toLocaleString("bn-BD")}</span>
               </div>
             )}
@@ -235,6 +286,10 @@ export default function CheckoutPage() {
     street: "",
   });
   const [coupon, setCoupon] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [isMounted, setIsMounted] = useState(false);
@@ -271,10 +326,42 @@ export default function CheckoutPage() {
     if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }));
   };
 
-  const handleApplyCoupon = () => {
-    if (coupon.trim().toUpperCase() === "ECOM10") {
-      setDiscount(Math.round(subtotal * 0.1));
+  const handleApplyCoupon = async () => {
+    if (!coupon.trim()) return;
+    setCouponLoading(true);
+    setCouponError(null);
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: coupon.trim(),
+          subtotal,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.valid && data.coupon) {
+        setDiscount(data.coupon.discountAmount);
+        setAppliedCoupon(data.coupon);
+        setCouponError(null);
+      } else {
+        setCouponError(data.error || "Invalid coupon code");
+        setDiscount(0);
+        setAppliedCoupon(null);
+      }
+    } catch {
+      setCouponError("Failed to validate coupon. Please try again.");
+    } finally {
+      setCouponLoading(false);
     }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCoupon("");
+    setDiscount(0);
+    setAppliedCoupon(null);
+    setCouponError(null);
   };
 
   const validate = () => {
@@ -323,8 +410,9 @@ export default function CheckoutPage() {
       },
       itemsPrice: subtotal,
       shippingPrice: shippingCost,
-      totalPrice: subtotal - discount + shippingCost,
+      totalPrice: Math.max(0, subtotal - discount) + shippingCost,
       discount,
+      couponCode: appliedCoupon ? appliedCoupon.code : undefined,
     };
     sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
     router.push("/checkout/payment");
@@ -640,8 +728,15 @@ export default function CheckoutPage() {
             shippingCost={shippingCost}
             discount={discount}
             coupon={coupon}
-            onCouponChange={setCoupon}
+            appliedCoupon={appliedCoupon}
+            couponError={couponError}
+            couponLoading={couponLoading}
+            onCouponChange={(v) => {
+              setCoupon(v);
+              if (couponError) setCouponError(null);
+            }}
             onApplyCoupon={handleApplyCoupon}
+            onRemoveCoupon={handleRemoveCoupon}
           />
         </div>
       </div>

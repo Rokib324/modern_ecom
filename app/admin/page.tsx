@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import MetricsCards from "@/components/admin/MetricsCards";
@@ -13,9 +14,13 @@ import OrdersTable from "@/components/admin/OrdersTable";
 import EarningsChart from "@/components/admin/EarningsChart";
 import NewComments from "@/components/admin/NewComments";
 import SettingsDrawer from "@/components/admin/SettingsDrawer";
+import CouponManagement from "@/components/admin/CouponManagement";
 
-export default function AdminDashboard() {
-  // Settings State (Image 5)
+function AdminDashboardContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+
+  // Settings State
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [layoutWidth, setLayoutWidth] = useState<"full" | "boxed">("full");
   const [menuStyle, setMenuStyle] = useState<"click" | "hover" | "default">("click");
@@ -27,7 +32,7 @@ export default function AdminDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [activeMenu, setActiveMenu] = useState(tabParam === "coupons" ? "coupons" : "dashboard");
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({
     category: false,
     attributes: false,
@@ -37,6 +42,12 @@ export default function AdminDashboard() {
     location: false,
     pages: false,
   });
+
+  useEffect(() => {
+    if (tabParam === "coupons") {
+      setActiveMenu("coupons");
+    }
+  }, [tabParam]);
 
   const toggleDropdown = (key: string) => {
     setOpenDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -85,44 +96,50 @@ export default function AdminDashboard() {
                 layoutWidth === "boxed" ? "max-w-[1340px]" : "w-full"
               }`}
             >
-              {/* 1. Top 4 Metrics Cards */}
-              <MetricsCards isDark={isDark} />
+              {activeMenu === "coupons" ? (
+                <CouponManagement isDark={isDark} />
+              ) : (
+                <>
+                  {/* 1. Top 4 Metrics Cards */}
+                  <MetricsCards isDark={isDark} />
 
-              {/* 2. Middle Row: Recent Order / Top Products / Top Countries */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
-                <div className="md:col-span-2 lg:col-span-5">
-                  <RecentOrdersChart isDark={isDark} />
-                </div>
-                <div className="md:col-span-1 lg:col-span-4">
-                  <TopProducts isDark={isDark} />
-                </div>
-                <div className="md:col-span-1 lg:col-span-3">
-                  <TopCountries isDark={isDark} />
-                </div>
-              </div>
+                  {/* 2. Middle Row: Recent Order / Top Products / Top Countries */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
+                    <div className="md:col-span-2 lg:col-span-5">
+                      <RecentOrdersChart isDark={isDark} />
+                    </div>
+                    <div className="md:col-span-1 lg:col-span-4">
+                      <TopProducts isDark={isDark} />
+                    </div>
+                    <div className="md:col-span-1 lg:col-span-3">
+                      <TopCountries isDark={isDark} />
+                    </div>
+                  </div>
 
-              {/* 3. Second Row: Best Shop Sellers & Product Overview Tables */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
-                <div className="lg:col-span-5">
-                  <BestSellersTable isDark={isDark} />
-                </div>
-                <div className="lg:col-span-7">
-                  <ProductOverviewTable isDark={isDark} />
-                </div>
-              </div>
+                  {/* 3. Second Row: Best Shop Sellers & Product Overview Tables */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+                    <div className="lg:col-span-5">
+                      <BestSellersTable isDark={isDark} />
+                    </div>
+                    <div className="lg:col-span-7">
+                      <ProductOverviewTable isDark={isDark} />
+                    </div>
+                  </div>
 
-              {/* 4. Third Row: Orders / Earnings / New Comments */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
-                <div className="md:col-span-1 lg:col-span-4">
-                  <OrdersTable isDark={isDark} />
-                </div>
-                <div className="md:col-span-2 lg:col-span-5">
-                  <EarningsChart isDark={isDark} />
-                </div>
-                <div className="md:col-span-1 lg:col-span-3">
-                  <NewComments isDark={isDark} />
-                </div>
-              </div>
+                  {/* 4. Third Row: Orders / Earnings / New Comments */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-5">
+                    <div className="md:col-span-1 lg:col-span-4">
+                      <OrdersTable isDark={isDark} />
+                    </div>
+                    <div className="md:col-span-2 lg:col-span-5">
+                      <EarningsChart isDark={isDark} />
+                    </div>
+                    <div className="md:col-span-1 lg:col-span-3">
+                      <NewComments isDark={isDark} />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Footer */}
               <footer className="pt-6 pb-2 text-center text-xs text-gray-400 dark:text-gray-500">
@@ -154,5 +171,19 @@ export default function AdminDashboard() {
         setLoaderEnabled={setLoaderEnabled}
       />
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="w-8 h-8 rounded-full border-4 border-[#2563eb] border-t-transparent animate-spin" />
+        </div>
+      }
+    >
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

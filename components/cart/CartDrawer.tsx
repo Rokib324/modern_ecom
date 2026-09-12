@@ -121,7 +121,11 @@ function CartDrawer() {
   const clearQuery = useSearchStore((s) => s.clearQuery);
 
   const [discountCode, setDiscountCode] = useState("");
-  const [discountApplied, setDiscountApplied] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
   const [giftWrapping, setGiftWrapping] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -258,18 +262,50 @@ function CartDrawer() {
 
   const currentTotal = totalPriceVal;
   const subtotal = currentTotal + (giftWrapping ? 150 : 0);
-  const discountedSubtotal = discountApplied ? subtotal * 0.9 : subtotal;
+  const discountedSubtotal = Math.max(0, subtotal - couponDiscount);
   const amountToFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(
     100,
     (subtotal / FREE_SHIPPING_THRESHOLD) * 100
   );
 
-  const handleApplyDiscount = (e: React.FormEvent) => {
+  const handleApplyDiscount = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (discountCode.trim()) {
-      setDiscountApplied(true);
+    if (!discountCode.trim()) return;
+    setDiscountLoading(true);
+    setDiscountError(null);
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: discountCode.trim(),
+          subtotal: currentTotal,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.valid && data.coupon) {
+        setCouponDiscount(data.coupon.discountAmount);
+        setAppliedCoupon(data.coupon);
+        setDiscountError(null);
+      } else {
+        setDiscountError(data.error || "Invalid coupon code");
+        setCouponDiscount(0);
+        setAppliedCoupon(null);
+      }
+    } catch {
+      setDiscountError("Failed to apply discount");
+    } finally {
+      setDiscountLoading(false);
     }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode("");
+    setCouponDiscount(0);
+    setAppliedCoupon(null);
+    setDiscountError(null);
   };
 
   return (
@@ -632,21 +668,47 @@ function CartDrawer() {
             {/* Fixed Footer Actions */}
             <footer className="flex-shrink-0 border-t border-gray-100 px-6 py-4 bg-white space-y-3.5 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] z-20">
               {/* Discount Code Form */}
-              <form onSubmit={handleApplyDiscount} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Discount code"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  className="font-sans-ui flex-1 border border-gray-300 rounded-[3px] px-3.5 py-1.5 text-xs sm:text-[13px] text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-900 transition-colors"
-                />
-                <button
-                  type="submit"
-                  className="font-sans-ui border border-[#f2b8a0] hover:bg-[#f2b8a0] text-[#3b2a25] px-4 py-1.5 text-xs uppercase tracking-wider font-semibold rounded-[3px] transition-colors"
-                >
-                  Apply
-                </button>
-              </form>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-[3px] text-xs text-emerald-900">
+                  <div className="flex items-center gap-1.5 font-sans-ui">
+                    <span className="font-bold uppercase tracking-wider">{appliedCoupon.code}</span>
+                    <span className="text-emerald-700">(-৳{couponDiscount.toLocaleString("en-BD")})</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveDiscount}
+                    className="text-emerald-700 hover:text-emerald-900 p-0.5 font-semibold transition-colors"
+                    title="Remove coupon"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <form onSubmit={handleApplyDiscount} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Discount code"
+                      value={discountCode}
+                      onChange={(e) => {
+                        setDiscountCode(e.target.value);
+                        if (discountError) setDiscountError(null);
+                      }}
+                      className="font-sans-ui uppercase tracking-wider flex-1 border border-gray-300 rounded-[3px] px-3.5 py-1.5 text-xs sm:text-[13px] text-gray-800 placeholder-gray-400 focus:outline-none focus:border-gray-900 transition-colors"
+                    />
+                    <button
+                      type="submit"
+                      disabled={discountLoading || !discountCode.trim()}
+                      className="font-sans-ui border border-[#f2b8a0] hover:bg-[#f2b8a0] text-[#3b2a25] px-4 py-1.5 text-xs uppercase tracking-wider font-semibold rounded-[3px] transition-colors disabled:opacity-50"
+                    >
+                      {discountLoading ? "..." : "Apply"}
+                    </button>
+                  </form>
+                  {discountError && (
+                    <p className="text-[11px] text-red-500 font-sans-ui">{discountError}</p>
+                  )}
+                </div>
+              )}
 
               {/* Gift Wrapping Row */}
               <div className="flex items-center justify-between pt-0.5">

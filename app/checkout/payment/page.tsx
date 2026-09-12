@@ -42,6 +42,7 @@ interface CheckoutData {
   shippingPrice: number;
   totalPrice: number;
   discount: number;
+  couponCode?: string;
 }
 
 /* ─── Payment method card ────────────────────────────────────────────────── */
@@ -217,6 +218,8 @@ export default function PaymentPage() {
           itemsPrice: checkoutData.itemsPrice,
           shippingPrice: checkoutData.shippingPrice,
           totalPrice: checkoutData.totalPrice,
+          discount: checkoutData.discount,
+          couponCode: checkoutData.couponCode,
         }),
       });
 

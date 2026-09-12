@@ -36,6 +36,9 @@ export interface IOrder extends Document {
   };
   itemsPrice: number;
   shippingPrice: number;
+  discount: number;
+  couponCode?: string;
+  coupon?: mongoose.Types.ObjectId;
   totalPrice: number;
   currency: string;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded";
@@ -105,6 +108,9 @@ const orderSchema = new Schema<IOrder>(
     },
     itemsPrice: { type: Number, required: true, default: 0 },
     shippingPrice: { type: Number, required: true, default: 0 },
+    discount: { type: Number, required: true, default: 0 },
+    couponCode: { type: String },
+    coupon: { type: Schema.Types.ObjectId, ref: "Coupon" },
     totalPrice: { type: Number, required: true, default: 0 },
     currency: { type: String, default: "BDT" },
     status: {
