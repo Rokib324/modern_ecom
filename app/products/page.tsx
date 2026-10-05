@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Heart, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Heart, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
 import { useWishlistStore } from "@/store/wishlistStore";
 
 /* ─────────────────────────────────────────────
@@ -249,7 +249,16 @@ const SORT_OPTIONS = [
   { value: "name-asc", label: "Name: A–Z" },
 ];
 
-const FILTER_PILLS = ["Style", "Size", "Fabric", "Colour", "Print", "Availability"];
+const FILTER_DATA: Record<string, string[]> = {
+  Style: ["Pyjama Sets", "Dressing Gowns", "Nightdresses", "Cami Sets", "Robes"],
+  Size: ["XS", "S", "M", "L", "XL", "XXL"],
+  Fabric: ["Cotton", "Satin", "Linen Blend", "Silk Touch", "Gingham"],
+  Colour: ["Ivory", "Navy", "Emerald Green", "Sage Green", "Silver Grey", "Pink"],
+  Print: ["Floral", "Botanical", "Striped", "Gingham", "Plain / Solid"],
+  Availability: ["In Stock", "New In", "Best Seller"],
+};
+
+const FILTER_PILLS = Object.keys(FILTER_DATA);
 
 /* ─────────────────────────────────────────────
    INNER COMPONENT (reads searchParams)
@@ -269,6 +278,7 @@ function ProductsPageInner() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
   const [openFilterPill, setOpenFilterPill] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, string[]>>({});
   const filterPillRef = useRef<HTMLDivElement>(null);
 
   const wishlistItems = useWishlistStore((s) => s.items);
@@ -325,11 +335,107 @@ function ProductsPageInner() {
     }
   };
 
-  // Filter
-  const filtered =
+  const toggleFilterOption = (pill: string, option: string) => {
+    setSelectedFilters((prev) => {
+      const list = prev[pill] || [];
+      const exists = list.includes(option);
+      const updated = exists ? list.filter((item) => item !== option) : [...list, option];
+      if (updated.length === 0) {
+        const copy = { ...prev };
+        delete copy[pill];
+        return copy;
+      }
+      return { ...prev, [pill]: updated };
+    });
+  };
+
+  const clearPillFilter = (pill: string) => {
+    setSelectedFilters((prev) => {
+      const copy = { ...prev };
+      delete copy[pill];
+      return copy;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilters({});
+  };
+
+  const activeFilterCount = Object.values(selectedFilters).reduce(
+    (acc, curr) => acc + curr.length,
+    0
+  );
+
+  // Filter base by category
+  const categoryFiltered =
     activeTab === "all"
       ? ALL_PRODUCTS
       : ALL_PRODUCTS.filter((p) => p.category === activeTab);
+
+  // Apply active pill filters
+  const filtered = categoryFiltered.filter((product) => {
+    // Style
+    if (selectedFilters["Style"]?.length) {
+      const match = selectedFilters["Style"].some((style) => {
+        if (style === "Pyjama Sets") return /pyjama/i.test(product.name);
+        if (style === "Dressing Gowns") return /dressing gown|gown/i.test(product.name);
+        if (style === "Nightdresses") return /nightdress/i.test(product.name);
+        if (style === "Cami Sets") return /cami/i.test(product.name);
+        if (style === "Robes") return /robe/i.test(product.name);
+        return false;
+      });
+      if (!match) return false;
+    }
+
+    // Fabric
+    if (selectedFilters["Fabric"]?.length) {
+      const match = selectedFilters["Fabric"].some((fabric) => {
+        if (fabric === "Satin") return /satin/i.test(product.name);
+        if (fabric === "Cotton") return /cotton/i.test(product.name);
+        if (fabric === "Linen Blend") return /linen/i.test(product.name);
+        if (fabric === "Silk Touch") return /silk/i.test(product.name);
+        if (fabric === "Gingham") return /gingham/i.test(product.name);
+        return false;
+      });
+      if (!match) return false;
+    }
+
+    // Colour
+    if (selectedFilters["Colour"]?.length) {
+      const match = selectedFilters["Colour"].some((colour) => {
+        const keyword = colour.replace(" Green", "");
+        return new RegExp(keyword, "i").test(product.name);
+      });
+      if (!match) return false;
+    }
+
+    // Print
+    if (selectedFilters["Print"]?.length) {
+      const match = selectedFilters["Print"].some((print) => {
+        if (print === "Floral") return /floral/i.test(product.name);
+        if (print === "Botanical") return /botanical/i.test(product.name);
+        if (print === "Striped") return /stripe/i.test(product.name);
+        if (print === "Gingham") return /gingham/i.test(product.name);
+        if (print === "Plain / Solid") return !/floral|botanical|stripe|gingham/i.test(product.name);
+        return false;
+      });
+      if (!match) return false;
+    }
+
+    // Availability
+    if (selectedFilters["Availability"]?.length) {
+      const match = selectedFilters["Availability"].some((avail) => {
+        if (avail === "New In") return !!product.isNew;
+        if (avail === "Best Seller") return !!product.isBestSeller;
+        if (avail === "In Stock") return true;
+        return false;
+      });
+      if (!match) return false;
+    }
+
+    // Size: Available across all items
+    return true;
+  });
 
   // Sort
   const sorted = [...filtered].sort((a, b) => {
@@ -452,6 +558,14 @@ function ProductsPageInner() {
                 <span className="text-[12px] text-gray-500">
                   {sorted.length} Result{sorted.length !== 1 ? "s" : ""}
                 </span>
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-[12px] text-gray-500 hover:text-gray-900 underline cursor-pointer"
+                  >
+                    Clear filters ({activeFilterCount})
+                  </button>
+                )}
               </div>
 
               {/* Right: Sort */}
@@ -488,40 +602,105 @@ function ProductsPageInner() {
 
             {/* Row 2: Filter pill dropdowns */}
             {showFilters && (
-              <div ref={filterPillRef} className="flex items-center gap-2 py-3 overflow-x-auto hide-scrollbar">
-                {FILTER_PILLS.map((pill) => (
-                  <div key={pill} className="relative flex-shrink-0">
-                    <button
-                      onClick={() =>
-                        setOpenFilterPill((prev) => (prev === pill ? null : pill))
-                      }
-                      className={`filter-pill-btn ${
-                        openFilterPill === pill ? "active" : ""
-                      }`}
-                    >
-                      {pill}
-                      <ChevronDown
-                        className={`w-3 h-3 ml-0.5 transition-transform duration-150 ${
-                          openFilterPill === pill ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
+              <div ref={filterPillRef} className="flex flex-wrap items-center gap-2 py-3">
+                {FILTER_PILLS.map((pill) => {
+                  const selectedInPill = selectedFilters[pill] || [];
+                  const isOpen = openFilterPill === pill;
 
-                    {/* Simple placeholder dropdown */}
-                    {openFilterPill === pill && (
-                      <div className="absolute left-0 top-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[180px] py-2">
-                        {["Option 1", "Option 2", "Option 3"].map((o) => (
-                          <button
-                            key={o}
-                            className="w-full text-left px-4 py-2 text-[12px] text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  return (
+                    <div
+                      key={pill}
+                      className={`relative flex-shrink-0 ${isOpen ? "z-50" : "z-10"}`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenFilterPill((prev) => (prev === pill ? null : pill))
+                        }
+                        className={`filter-pill-btn ${
+                          isOpen || selectedInPill.length > 0 ? "active" : ""
+                        }`}
+                      >
+                        <span>{pill}</span>
+                        {selectedInPill.length > 0 && (
+                          <span
+                            className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold leading-none ${
+                              isOpen || selectedInPill.length > 0
+                                ? "bg-white text-gray-900"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
                           >
-                            {o}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                            {selectedInPill.length}
+                          </span>
+                        )}
+                        <ChevronDown
+                          className={`w-3 h-3 ml-0.5 transition-transform duration-150 ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {isOpen && (
+                        <div
+                          className={`absolute ${
+                            pill === "Availability" ? "right-0" : "left-0"
+                          } top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 min-w-[210px] p-2 max-h-64 overflow-y-auto`}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            {FILTER_DATA[pill]?.map((option) => {
+                              const isSelected = selectedInPill.includes(option);
+                              return (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFilterOption(pill, option);
+                                  }}
+                                  className={`w-full flex items-center justify-between px-3 py-2 text-[12px] rounded-lg transition-colors cursor-pointer text-left ${
+                                    isSelected
+                                      ? "bg-gray-100 font-semibold text-gray-900"
+                                      : "text-gray-700 hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <span>{option}</span>
+                                  <span
+                                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                      isSelected
+                                        ? "bg-gray-900 border-gray-900 text-white"
+                                        : "border-gray-300 bg-white"
+                                    }`}
+                                  >
+                                    {isSelected && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {selectedInPill.length > 0 && (
+                            <div className="pt-2 mt-1.5 border-t border-gray-100 flex items-center justify-between px-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  clearPillFilter(pill);
+                                }}
+                                className="text-[11px] text-gray-500 hover:text-gray-900 underline cursor-pointer"
+                              >
+                                Clear
+                              </button>
+                              <span className="text-[11px] text-gray-400">
+                                {selectedInPill.length} selected
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -609,12 +788,20 @@ function ProductsPageInner() {
           {sorted.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <p className="font-editorial-serif text-2xl text-gray-400 mb-2">No items found</p>
-              <p className="text-xs text-gray-400 mb-6">Try a different filter</p>
+              <p className="text-xs text-gray-400 mb-6">
+                {activeFilterCount > 0 ? "Try adjusting or clearing your filters" : "Try a different filter"}
+              </p>
               <button
-                onClick={() => handleTabChange("all")}
+                onClick={() => {
+                  if (activeFilterCount > 0) {
+                    clearAllFilters();
+                  } else {
+                    handleTabChange("all");
+                  }
+                }}
                 className="text-xs uppercase tracking-wider font-semibold border border-gray-300 hover:border-gray-900 px-6 py-2.5 rounded-[2px] transition-colors cursor-pointer"
               >
-                View All
+                {activeFilterCount > 0 ? "Clear Filters" : "View All"}
               </button>
             </div>
           )}

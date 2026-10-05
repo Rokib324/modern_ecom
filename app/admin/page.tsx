@@ -7,7 +7,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import MetricsCards from "@/components/admin/MetricsCards";
 import RecentOrdersChart from "@/components/admin/RecentOrdersChart";
 import TopProducts from "@/components/admin/TopProducts";
-import TopCountries from "@/components/admin/TopCountries";
+import TopCountries from "@/components/admin/TopDivisions";
 import BestSellersTable from "@/components/admin/BestSellersTable";
 import ProductOverviewTable from "@/components/admin/ProductOverviewTable";
 import OrdersTable from "@/components/admin/OrdersTable";
