@@ -16,7 +16,7 @@ interface CatalogProduct {
   price: string;
   numPrice: number;
   image: string;
-  category: "new" | "best-sellers" | "linen-blend";
+  category: string;
   isNew?: boolean;
   isBestSeller?: boolean;
 }
@@ -184,51 +184,127 @@ const ALL_PRODUCTS: CatalogProduct[] = [
     image: "/images/collection_cotton_pyjamas.jpg",
     category: "linen-blend",
   },
+
+  // ── MENS ──────────────────────────────────────────
+  {
+    id: "mens-1",
+    name: "Classic Navy Tailored Mens Cotton Pyjama Set",
+    price: "৳4,800",
+    numPrice: 4800,
+    image: "/images/mens_nightwear.jpg",
+    category: "mens",
+    isNew: true,
+  },
+  {
+    id: "mens-2",
+    name: "Charcoal Stripe Organic Cotton Mens Lounge Set",
+    price: "৳5,200",
+    numPrice: 5200,
+    image: "/images/prod_mens_pajama.jpg",
+    category: "mens",
+    isBestSeller: true,
+  },
+  {
+    id: "mens-3",
+    name: "Deep Navy Waffle Cotton Luxury Mens Dressing Gown Robe",
+    price: "৳5,600",
+    numPrice: 5600,
+    image: "/images/prod_mens_robe.jpg",
+    category: "mens",
+  },
+
+  // ── KIDS ──────────────────────────────────────────
+  {
+    id: "kids-1",
+    name: "Playful Summer Cotton Kids Pyjama Set",
+    price: "৳3,200",
+    numPrice: 3200,
+    image: "/images/kids_pyjamas.jpg",
+    category: "kids",
+    isNew: true,
+  },
+  {
+    id: "kids-2",
+    name: "Starry Night Organic Soft Cotton Kids Pajama Set",
+    price: "৳3,400",
+    numPrice: 3400,
+    image: "/images/prod_kids_pajama.jpg",
+    category: "kids",
+    isBestSeller: true,
+  },
 ];
 
 /* ─────────────────────────────────────────────
-   TAB DEFINITIONS
+   COLLECTION DEFINITIONS
    ───────────────────────────────────────────── */
-type TabKey = "all" | "new" | "best-sellers" | "linen-blend";
+interface CollectionMeta {
+  key: string;
+  label: string;
+  heading: string;
+  subheading: string;
+  sublinks: { label: string; href: string }[];
+  filterFn: (p: CatalogProduct) => boolean;
+}
 
-const TABS: { key: TabKey; label: string; heading: string; subheading: string; sublinks: { label: string; href: string }[] }[] = [
-  {
+const COLLECTIONS_MAP: Record<string, CollectionMeta> = {
+  "all": {
     key: "all",
     label: "All",
     heading: "Women's Pyjamas & Nightwear",
     subheading:
       "Explore our latest sleepwear collection, featuring beautifully designed long pyjamas, short pyjamas, and our bestselling oversized pyjamas in dreamy hand-drawn prints.",
     sublinks: [
-      { label: "Women's Cotton Pyjamas & Nightwear", href: "/products?category=linen-blend" },
-      { label: "Women's Satin Pyjamas & Nightwear", href: "/products?category=best-sellers" },
-      { label: "Women's Pyjamas", href: "/products?category=new" },
+      { label: "Women's Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Women's Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+      { label: "Linen Blend", href: "/products?category=linen-blend" },
+      { label: "Nightdresses", href: "/products?category=nightdresses" },
+      { label: "Striped Pyjamas", href: "/products?category=striped-pyjamas" },
     ],
+    filterFn: (p) => p.category !== "mens" && p.category !== "kids",
   },
-  {
+  "new": {
     key: "new",
     label: "New In",
-    heading: "New In",
+    heading: "New In Sleepwear",
     subheading:
       "Explore our latest sleepwear arrivals, featuring beautifully designed long pyjamas, short pyjamas, and our bestselling oversized pyjamas in dreamy hand-drawn prints.",
     sublinks: [
-      { label: "Satin Nightwear", href: "/products?category=new" },
-      { label: "Pyjama Sets", href: "/products?category=new" },
-      { label: "Dressing Gowns", href: "/products?category=new" },
+      { label: "Satin Nightwear", href: "/products?category=satin-pyjamas" },
+      { label: "Cotton Pyjama Sets", href: "/products?category=cotton-pyjamas" },
+      { label: "Dressing Gowns", href: "/products?category=dressing-gowns" },
+      { label: "View All", href: "/products" },
     ],
+    filterFn: (p) => !!p.isNew || p.category === "new",
   },
-  {
+  "new-in": {
+    key: "new-in",
+    label: "New In",
+    heading: "New In Sleepwear",
+    subheading:
+      "Explore our latest sleepwear arrivals, featuring beautifully designed long pyjamas, short pyjamas, and our bestselling oversized pyjamas in dreamy hand-drawn prints.",
+    sublinks: [
+      { label: "Satin Nightwear", href: "/products?category=satin-pyjamas" },
+      { label: "Cotton Pyjama Sets", href: "/products?category=cotton-pyjamas" },
+      { label: "Dressing Gowns", href: "/products?category=dressing-gowns" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => !!p.isNew || p.category === "new",
+  },
+  "best-sellers": {
     key: "best-sellers",
     label: "Best Sellers",
-    heading: "Best Sellers",
+    heading: "Best Sellers Collection",
     subheading:
       "Our most loved styles, worn and adored season after season. Discover the pieces customers return to time and time again.",
     sublinks: [
-      { label: "Women's Cotton Pyjamas & Nightwear", href: "/products?category=best-sellers" },
-      { label: "Women's Satin Pyjamas & Nightwear", href: "/products?category=best-sellers" },
-      { label: "Women's Pyjamas", href: "/products?category=best-sellers" },
+      { label: "Women's Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Women's Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+      { label: "Striped Pyjamas", href: "/products?category=striped-pyjamas" },
+      { label: "View All", href: "/products" },
     ],
+    filterFn: (p) => !!p.isBestSeller || p.category === "best-sellers",
   },
-  {
+  "linen-blend": {
     key: "linen-blend",
     label: "Linen Blend",
     heading: "Linen Blend Pyjamas & Nightwear",
@@ -236,11 +312,262 @@ const TABS: { key: TabKey; label: string; heading: string; subheading: string; s
       "Breathable and beautifully relaxed — our linen-blend pyjamas and nightwear are crafted for effortless comfort all year round.",
     sublinks: [
       { label: "Linen Pyjama Sets", href: "/products?category=linen-blend" },
-      { label: "Linen Dressing Gowns", href: "/products?category=linen-blend" },
-      { label: "Linen Nightdresses", href: "/products?category=linen-blend" },
+      { label: "Linen Dressing Gowns", href: "/products?category=dressing-gowns" },
+      { label: "Linen Nightdresses", href: "/products?category=nightdresses" },
+      { label: "View All", href: "/products" },
     ],
+    filterFn: (p) => p.category === "linen-blend" || /linen/i.test(p.name),
   },
-];
+  "cotton-pyjamas": {
+    key: "cotton-pyjamas",
+    label: "Cotton Pyjamas",
+    heading: "Women's Cotton Pyjamas & Nightwear",
+    subheading:
+      "Discover our signature breathable, pure organic cotton pyjamas and sleep sets designed for timeless elegance and restful nights.",
+    sublinks: [
+      { label: "Striped Cotton", href: "/products?category=striped-pyjamas" },
+      { label: "Cotton Nightdresses", href: "/products?category=nightdresses" },
+      { label: "Linen-Cotton Blends", href: "/products?category=linen-blend" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /cotton/i.test(p.name),
+  },
+  "nightdresses": {
+    key: "nightdresses",
+    label: "Nightdresses",
+    heading: "Women's Nightdresses & Shirts",
+    subheading:
+      "From delicate satin slips to lightweight vintage floral cotton nightshirts, find effortless elegance for sleeping and lounging.",
+    sublinks: [
+      { label: "Satin Nightdresses", href: "/products?category=satin-pyjamas" },
+      { label: "Cotton Nightdresses", href: "/products?category=cotton-pyjamas" },
+      { label: "Linen Nightdresses", href: "/products?category=linen-blend" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /nightdress|nightshirt/i.test(p.name),
+  },
+  "satin-pyjamas": {
+    key: "satin-pyjamas",
+    label: "Satin Pyjamas",
+    heading: "Women's Satin Pyjamas & Nightwear",
+    subheading:
+      "Indulge in ultra-smooth, lightweight silk-touch satin pyjama sets, cami shorts, and robes finished with exquisite lace trims.",
+    sublinks: [
+      { label: "Satin Cami Sets", href: "/products?category=satin-pyjamas" },
+      { label: "Satin Dressing Gowns", href: "/products?category=dressing-gowns" },
+      { label: "Satin Nightdresses", href: "/products?category=nightdresses" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /satin|silk/i.test(p.name),
+  },
+  "striped-pyjamas": {
+    key: "striped-pyjamas",
+    label: "Striped Pyjamas",
+    heading: "Striped Pyjamas & Nightwear",
+    subheading:
+      "Crisp, classic tailoring meets everyday luxury with our iconic yarn-dyed striped pyjama sets and nightwear.",
+    sublinks: [
+      { label: "Navy Stripes", href: "/products?category=striped-pyjamas" },
+      { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Linen Blend", href: "/products?category=linen-blend" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /stripe|striped/i.test(p.name),
+  },
+  "dressing-gowns": {
+    key: "dressing-gowns",
+    label: "Dressing Gowns",
+    heading: "Dressing Gowns & Robes",
+    subheading:
+      "Wrap yourself in luxury with our full-length satin kimonos, breathable linen gowns, and plush morning robes.",
+    sublinks: [
+      { label: "Satin Kimonos", href: "/products?category=satin-pyjamas" },
+      { label: "Linen Robes", href: "/products?category=linen-blend" },
+      { label: "Cotton Gowns", href: "/products?category=cotton-pyjamas" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /dressing gown|gown|robe/i.test(p.name),
+  },
+  "robes": {
+    key: "robes",
+    label: "Robes",
+    heading: "Dressing Gowns & Robes",
+    subheading:
+      "Wrap yourself in luxury with our full-length satin kimonos, breathable linen gowns, and plush morning robes.",
+    sublinks: [
+      { label: "Satin Kimonos", href: "/products?category=satin-pyjamas" },
+      { label: "Linen Robes", href: "/products?category=linen-blend" },
+      { label: "Cotton Gowns", href: "/products?category=cotton-pyjamas" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => /dressing gown|gown|robe/i.test(p.name),
+  },
+  "womens": {
+    key: "womens",
+    label: "Womens",
+    heading: "Women's Pyjamas & Nightwear",
+    subheading:
+      "Explore our complete womens sleepwear collection, featuring beautifully designed long pyjamas, short pyjamas, and bestselling robes.",
+    sublinks: [
+      { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+      { label: "Linen Blend", href: "/products?category=linen-blend" },
+      { label: "Nightdresses", href: "/products?category=nightdresses" },
+    ],
+    filterFn: (p) => p.category !== "mens" && p.category !== "kids",
+  },
+  "mens": {
+    key: "mens",
+    label: "Mens",
+    heading: "Men's Nightwear & Pyjamas",
+    subheading:
+      "Crisp cotton and tailored relaxed-fit pyjama sets, lounge trousers, and classic robes for men.",
+    sublinks: [
+      { label: "Classic Pyjama Sets", href: "/products?category=mens" },
+      { label: "Striped Lounge Sets", href: "/products?category=striped-pyjamas" },
+      { label: "Cotton Nightwear", href: "/products?category=cotton-pyjamas" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => p.category === "mens" || /mens|men/i.test(p.name),
+  },
+  "kids": {
+    key: "kids",
+    label: "Kids",
+    heading: "Kids Pyjamas & Sleepwear",
+    subheading:
+      "Ultra-soft and gentle nightwear designed for kids in playful, hand-drawn prints. 20% of profits go to children's charities.",
+    sublinks: [
+      { label: "Kids Sets", href: "/products?category=kids" },
+      { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Striped Pyjamas", href: "/products?category=striped-pyjamas" },
+      { label: "View All", href: "/products" },
+    ],
+    filterFn: (p) => p.category === "kids" || /kids|kid/i.test(p.name),
+  },
+};
+
+function getActiveCollectionKey(searchParams: URLSearchParams | ReturnType<typeof useSearchParams>): string {
+  const cat = searchParams.get("category");
+  const col = searchParams.get("collection");
+  const fabric = searchParams.get("fabric");
+  const style = searchParams.get("style");
+  const search = searchParams.get("search");
+
+  if (search) return `search:${search}`;
+
+  if (cat && cat !== "all") {
+    if (cat === "womens") {
+      if (col) return `collection:${col}`;
+      if (fabric) return `fabric:${fabric}`;
+      if (style) return `style:${style}`;
+      return "womens";
+    }
+    return cat;
+  }
+
+  if (col) return `collection:${col}`;
+  if (fabric) return `fabric:${fabric}`;
+  if (style) return `style:${style}`;
+
+  return "all";
+}
+
+function getCollectionMeta(key: string): CollectionMeta {
+  if (COLLECTIONS_MAP[key]) {
+    return COLLECTIONS_MAP[key];
+  }
+
+  if (key.startsWith("collection:")) {
+    const slug = key.replace("collection:", "");
+    if (slug === "striped") return COLLECTIONS_MAP["striped-pyjamas"];
+    const title = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      key,
+      label: title,
+      heading: `${title} Collection`,
+      subheading: `Discover our handcrafted ${title.toLowerCase()} nightwear and sleepwear sets.`,
+      sublinks: [
+        { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+        { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+        { label: "View All", href: "/products" },
+      ],
+      filterFn: (p) => new RegExp(slug.replace("-checked", "").replace("-family", ""), "i").test(p.name),
+    };
+  }
+
+  if (key.startsWith("fabric:")) {
+    const slug = key.replace("fabric:", "");
+    if (slug === "cotton") return COLLECTIONS_MAP["cotton-pyjamas"];
+    if (slug === "satin") return COLLECTIONS_MAP["satin-pyjamas"];
+    if (slug === "linen-blend") return COLLECTIONS_MAP["linen-blend"];
+    const title = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      key,
+      label: title,
+      heading: `${title} Nightwear`,
+      subheading: `Explore our collection crafted from luxurious ${title.toLowerCase()} fabrics.`,
+      sublinks: [
+        { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+        { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+        { label: "View All", href: "/products" },
+      ],
+      filterFn: (p) => new RegExp(slug.replace("-voile", "").replace("-gauze", "").replace("brushed-", ""), "i").test(p.name),
+    };
+  }
+
+  if (key.startsWith("style:")) {
+    const slug = key.replace("style:", "");
+    if (slug === "nightdresses") return COLLECTIONS_MAP["nightdresses"];
+    if (slug === "robes") return COLLECTIONS_MAP["dressing-gowns"];
+    const title = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      key,
+      label: title,
+      heading: `${title} Nightwear`,
+      subheading: `Discover our beautifully tailored ${title.toLowerCase()} styles.`,
+      sublinks: [
+        { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+        { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+        { label: "View All", href: "/products" },
+      ],
+      filterFn: (p) => new RegExp(slug.replace("traditional-", ""), "i").test(p.name),
+    };
+  }
+
+  if (key.startsWith("search:")) {
+    const searchTerm = key.replace("search:", "");
+    return {
+      key,
+      label: `Search: ${searchTerm}`,
+      heading: `Results for "${searchTerm}"`,
+      subheading: `Showing products matching your search term "${searchTerm}".`,
+      sublinks: [
+        { label: "View All", href: "/products" },
+        { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+        { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+      ],
+      filterFn: (p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    };
+  }
+
+  const title = key.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return {
+    key,
+    label: title,
+    heading: `${title} Collection`,
+    subheading: "Explore our curated nightwear and pyjamas in luxury fabrics and handcrafted prints.",
+    sublinks: [
+      { label: "Women's Pyjamas", href: "/products" },
+      { label: "Cotton Pyjamas", href: "/products?category=cotton-pyjamas" },
+      { label: "Satin Pyjamas", href: "/products?category=satin-pyjamas" },
+      { label: "Linen Blend", href: "/products?category=linen-blend" },
+    ],
+    filterFn: (p) => {
+      const query = key.toLowerCase().replace(/-pyjamas|-nightwear/g, "");
+      return p.category === key || p.name.toLowerCase().includes(query);
+    },
+  };
+}
 
 const SORT_OPTIONS = [
   { value: "default", label: "Featured" },
@@ -267,13 +594,7 @@ function ProductsPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Map query param to tab key
-  const paramCategory = searchParams.get("category") as TabKey | null;
-  const validKeys: TabKey[] = ["all", "new", "best-sellers", "linen-blend"];
-  const initialTab: TabKey =
-    paramCategory && validKeys.includes(paramCategory) ? paramCategory : "all";
-
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  const activeTab = getActiveCollectionKey(searchParams);
   const [sortBy, setSortBy] = useState("default");
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
@@ -286,16 +607,6 @@ function ProductsPageInner() {
   const removeWishlistItem = useWishlistStore((s) => s.removeItem);
 
   const sortRef = useRef<HTMLDivElement>(null);
-
-  // Sync URL → tab when user navigates back/forward
-  useEffect(() => {
-    const cat = searchParams.get("category") as TabKey | null;
-    if (cat && validKeys.includes(cat)) {
-      setActiveTab(cat);
-    } else {
-      setActiveTab("all");
-    }
-  }, [searchParams]);
 
   // Close sort menu + filter pills on outside click
   useEffect(() => {
@@ -311,8 +622,8 @@ function ProductsPageInner() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const handleTabChange = (key: TabKey) => {
-    setActiveTab(key);
+  const handleTabChange = (key: string) => {
+    setOpenFilterPill(null);
     const url = key === "all" ? "/products" : `/products?category=${key}`;
     router.push(url, { scroll: false });
   };
@@ -366,11 +677,10 @@ function ProductsPageInner() {
     0
   );
 
-  // Filter base by category
-  const categoryFiltered =
-    activeTab === "all"
-      ? ALL_PRODUCTS
-      : ALL_PRODUCTS.filter((p) => p.category === activeTab);
+  const currentTab = getCollectionMeta(activeTab);
+
+  // Filter base by category/collection
+  const categoryFiltered = ALL_PRODUCTS.filter(currentTab.filterFn);
 
   // Apply active pill filters
   const filtered = categoryFiltered.filter((product) => {
@@ -445,7 +755,6 @@ function ProductsPageInner() {
     return 0;
   });
 
-  const currentTab = TABS.find((t) => t.key === activeTab) ?? TABS[0];
   const currentSortLabel =
     SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Featured";
 
@@ -519,15 +828,25 @@ function ProductsPageInner() {
 
               {/* Sub-category tag links */}
               <div className="flex flex-wrap items-center gap-2 pb-7 pt-1">
-                {currentTab.sublinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="inline-block text-[12px] sm:text-[13px] text-gray-800 border border-gray-400 rounded-full px-4 py-1.5 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-200 leading-tight"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {currentTab.sublinks.map((link) => {
+                  const isActive =
+                    link.href === `/products?category=${activeTab}` ||
+                    (activeTab === "all" && link.href === "/products");
+
+                  return (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      className={`inline-block text-[12px] sm:text-[13px] border rounded-full px-4 py-1.5 transition-all duration-200 leading-tight ${
+                        isActive
+                          ? "bg-gray-900 text-white border-gray-900 font-medium"
+                          : "text-gray-800 border-gray-400 hover:bg-gray-900 hover:text-white hover:border-gray-900"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
