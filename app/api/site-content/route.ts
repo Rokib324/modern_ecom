@@ -5,11 +5,13 @@ import { requireAdmin, errorResponse } from "@/lib/api-helpers";
 
 // GET /api/site-content?section=hero
 // Public — returns data for the given section. Seeds defaults on first access.
+// Falls back to in-code defaults if the DB is unreachable.
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const section = searchParams.get("section");
+
   try {
     await connectDB();
-    const { searchParams } = new URL(request.url);
-    const section = searchParams.get("section");
 
     if (!section) {
       // Return all sections if no specific section requested
@@ -39,8 +41,21 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: doc.data });
   } catch (err) {
-    console.error("[GET /api/site-content]", err);
-    return errorResponse("Failed to load content", 500);
+    // DB unreachable — serve in-code defaults so the page still renders
+    console.warn("[GET /api/site-content] DB unavailable, using defaults:", (err as Error).message);
+
+    if (!section) {
+      return NextResponse.json({ success: true, data: SITE_CONTENT_DEFAULTS, fromDefaults: true });
+    }
+
+    const defaultData = SITE_CONTENT_DEFAULTS[section];
+    if (!defaultData) {
+      return NextResponse.json(
+        { success: false, error: "Unknown section" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ success: true, data: defaultData, fromDefaults: true });
   }
 }
 
